@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.31.0 FATAL_ERROR)
 
-project(C64)
+project(C64_WIN)
 
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED YES)
@@ -64,18 +64,29 @@ set_target_properties(imgui PROPERTIES FOLDER third-party) # optoinal IDE dir
 add_subdirectory(src/C64)
 # add_subdirectory(test)
 
+file(GLOB_RECURSE UTIL_SOURCES
+    "${PROJECT_SOURCE_DIR}/src/Utility/*.cpp"
+    "${PROJECT_SOURCE_DIR}/src/Utility/*.hpp"
+)
+
 # add executable
-add_executable(C64_WIN
+add_executable(${PROJECT_NAME} 
   src/main.cpp
+
+  src/GUI.cpp
+
+  ${UTIL_SOURCES}
 )
 
 # link dependencies
 target_link_libraries(
-  C64_WIN
+  ${PROJECT_NAME} 
   C64
   imgui
   opengl32
   SDL3::SDL3
+  spdlog::spdlog
 )
+target_compile_definitions(${PROJECT_NAME} PRIVATE SPDLOG_COMPILED_LIB)
 
 # file(COPY "${CMAKE_SOURCE_DIR}/data/bios/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/data/bios")
