@@ -1,9 +1,14 @@
 
-#include "GUI.hpp"
 #include "C64/C64.hpp"
+#include "GUI.hpp"
+#include "Utility/Logger.hpp"
 
 // Main code
 int main(int, char **) {
+	auto CPULogger = AddLogger("CPU");
+	auto GUILogger = AddLogger("GUI");
+	auto C64Logger = AddLogger("C64");
+	auto MEMLogger = AddLogger("MEM");
 
 	C64 c64;
 
@@ -22,7 +27,8 @@ int main(int, char **) {
 			ImGui_ImplSDL3_ProcessEvent(&event);
 			if (event.type == SDL_EVENT_QUIT)
 				done = true;
-			if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED && event.window.windowID == SDL_GetWindowID(context->window))
+			if (event.type == SDL_EVENT_WINDOW_CLOSE_REQUESTED &&
+				event.window.windowID == SDL_GetWindowID(context->window))
 				done = true;
 		}
 
@@ -33,6 +39,9 @@ int main(int, char **) {
 
 		gui.Render(c64);
 	}
+
+	gui.Destroy();
+	spdlog::drop_all();
 
 	return 0;
 }

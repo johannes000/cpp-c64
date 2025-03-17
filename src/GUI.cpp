@@ -8,7 +8,7 @@ ImVec4 CLEAR_COLOR = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 } // namespace
 
 GUI::GUI() {
-	log = AddLogger("GUI");
+	log = spdlog::get("GUI");
 }
 
 i32 GUI::Init() {

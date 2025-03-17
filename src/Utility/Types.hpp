@@ -16,3 +16,7 @@ typedef float f32;
 typedef double f64;
 
 #define global static
+
+constexpr u32 kib(u32 x) { return 1024 * x; }
+constexpr u32 mib(u32 x) { return 1024 * kib(x); }
+constexpr u32 gib(u32 x) { return 1024 * mib(x); }

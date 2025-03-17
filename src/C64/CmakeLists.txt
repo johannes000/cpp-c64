@@ -15,4 +15,5 @@ target_link_libraries(
   C64
   spdlog::spdlog
 )
+
 target_compile_definitions(C64 PRIVATE SPDLOG_COMPILED_LIB)
