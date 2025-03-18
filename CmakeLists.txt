@@ -86,7 +86,8 @@ target_link_libraries(
   opengl32
   SDL3::SDL3
   spdlog::spdlog
+  stdc++
 )
-target_compile_definitions(${PROJECT_NAME} PRIVATE SPDLOG_COMPILED_LIB)
 
+target_compile_definitions(${PROJECT_NAME} PRIVATE SPDLOG_COMPILED_LIB)
 file(COPY "${CMAKE_SOURCE_DIR}/roms/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/roms")

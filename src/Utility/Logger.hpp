@@ -4,10 +4,8 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/basic_file_sink.h>
 #include <memory>
-#include <filesystem>
 
 inline std::shared_ptr<spdlog::logger> AddLogger(const std::string &name, spdlog::level::level_enum level = spdlog::level::info) {
-	std::filesystem::create_directories("logs");
 
 	auto now = std::chrono::system_clock::now();
 	auto now_time_t = std::chrono::system_clock::to_time_t(now);

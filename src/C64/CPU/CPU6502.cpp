@@ -22,13 +22,19 @@ CPU6502::CPU6502() : Component("CPU"),
 					 SP(0),
 					 PC(0),
 					 log(spdlog::get("CPU")) {
+	assert(OpCodes.size() == 256);
 	mKernal.loadFromFile(Kernals[2]);
 	mBasic.loadFromFile(CharSets[0]);
 	mCharSet.loadFromFile(BasicRoms[0]);
 
 	log->info("{:X}", mKernal.IoLoad8(0xFF));
-	log->info("{:X}", mBasic.IoLoad16(0x1234));
-	log->info("{:X}", mBasic.IoLoad16(0xFF));
+	log->info("{:X}", mKernal.IoLoad16(0xFF));
+
+	(this->*(OpCodes[0x00].InstFunc))();
+	(this->*(OpCodes[0x01].InstFunc))();
+	(this->*(OpCodes[0x02].InstFunc))();
+
+	// auto f = (this->*OpCodes[3].InstFunc)();
 }
 
 CPU6502::~CPU6502() {
