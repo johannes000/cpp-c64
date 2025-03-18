@@ -20,3 +20,30 @@ typedef double f64;
 constexpr u32 kib(u32 x) { return 1024 * x; }
 constexpr u32 mib(u32 x) { return 1024 * kib(x); }
 constexpr u32 gib(u32 x) { return 1024 * mib(x); }
+
+constexpr u16 KERNAL_ADDR = 0xE000;
+constexpr u16 KERNAL_SIZE = kib(8);
+constexpr u16 BASIC_ROM_ADDR = 0xA000;
+constexpr u16 BASIC_ROM_SIZE = kib(8);
+constexpr u16 CHARACTER_ROM_ADDR = 0xD000;
+constexpr u16 CHARACTER_ROM_SIZE = kib(4);
+
+namespace AddressRange {
+struct AddressRange {
+	constexpr AddressRange(u16 start, u16 size) : mStart(start), mEnd(static_cast<u16>(std::min<u32>(start + size, 0xFFFF))), mSize(size) {};
+	bool Contains(u16 addr, u16 &relativeAddr) const {
+		if (addr >= mStart && addr < mEnd) {
+			relativeAddr = addr - mStart;
+			return true;
+		}
+		return false;
+	}
+	u16 mStart;
+	u16 mEnd;
+	u16 mSize;
+};
+
+constexpr AddressRange KERNAL(KERNAL_ADDR, KERNAL_SIZE);
+constexpr AddressRange BASIC_ROM(BASIC_ROM_ADDR, BASIC_ROM_SIZE);
+constexpr AddressRange CHARACTER_ROM(CHARACTER_ROM_ADDR, CHARACTER_ROM_SIZE);
+}; // namespace AddressRange

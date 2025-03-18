@@ -3,6 +3,8 @@
 #include "C64\Component.hpp"
 #include "C64\Memory\Memory.hpp"
 
+class C64;
+
 class CPU6502 : public Component {
 public:
 	struct Instruction {
@@ -14,13 +16,23 @@ public:
 	};
 
 public:
-	CPU6502();
+	CPU6502(C64 *c64);
 	~CPU6502();
 
+	Instruction GetNextInstruction();
+
+	void RunOneInstruction();
+
+	u8 IOLoad8(u16 address) const override;
+	u16 IOLoad16(u16 address) const override;
+
+	void IOStore8(u16 address, u8 value) override;
+	void IOStore16(u16 address, u16 value) override;
+
+	void Reset();
+
 private:
-	Memory<kib(8)> mKernal;
-	Memory<kib(8)> mBasic;
-	Memory<kib(4)> mCharSet;
+	C64 *mC64;
 
 	Instruction mCurrentInstruction;
 
@@ -47,7 +59,7 @@ private:
 	// Stack Pointer
 	u8 SP;
 	// Program Counter
-	u8 PC;
+	u16 PC;
 
 	std::shared_ptr<spdlog::logger> log;
 

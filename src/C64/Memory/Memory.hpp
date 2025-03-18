@@ -8,25 +8,26 @@ public:
 	Memory(const std::string &name) : Component(name) {
 		log = spdlog::get("MEM");
 
-		memset(mData, 0, size_t(size));
+		Reset();
 	};
 
-	u8 IoLoad8(u16 address) const override {
+	u8 IOLoad8(u16 address) const override {
 		return *((u8 *)(&mData[address]));
 	}
-	u16 IoLoad16(u16 address) const override {
+	u16 IOLoad16(u16 address) const override {
 		return *((u16 *)(&mData[address]));
 	}
 
-	void IoStore8(u16 address, u8 value) override {
+	void IOStore8(u16 address, u8 value) override {
 		mData[address] = value;
 	}
-	void IoStore16(u16 address, u16 value) override {
+	void IOStore16(u16 address, u16 value) override {
 		mData[address + 0] = (u8)value;
 		mData[address + 1] = (u8)(value >> 8);
 	}
 
 	bool loadFromFile(std::string filePath) {
+		Reset();
 		if (FILE *file = fopen(filePath.c_str(), "rb+")) {
 			fread(mData, sizeof(u8), size, file);
 			fclose(file);
@@ -35,6 +36,10 @@ public:
 		}
 		log->error("{} nicht vorhanden", filePath);
 		return false;
+	}
+
+	void Reset() {
+		memset(mData, 0, size_t(size));
 	}
 
 private:

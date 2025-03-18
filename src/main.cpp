@@ -12,13 +12,14 @@ int main(int, char **) {
 
 	C64 c64;
 
+	c64.RunOneInstruction();
+
 	GUI gui;
 	auto ret = gui.Init();
 	if (ret != 0)
 		return ret;
 
 	auto context = gui.GetContext();
-
 	bool done = false;
 
 	while (!done) {
