@@ -9,5 +9,6 @@
 
 #include <spdlog/spdlog.h>
 
-#include "Logger.hpp"
 #include "Types.hpp"
+#include "Helper.hpp"
+#include "Logger.hpp"
