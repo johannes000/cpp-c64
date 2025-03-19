@@ -1,7 +1,8 @@
 #include "CPU6502.hpp"
+#include "C64\C64.hpp"
 
 void CPU6502::ILL() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	log->warn("Illegale Instruction");
 }
 
 void CPU6502::LDA() {
@@ -228,54 +229,63 @@ void CPU6502::RTI() {
 	log->warn("{} Noch nicht implementiert", __FUNCTION__);
 }
 
-void CPU6502::Immediate() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+u16 CPU6502::Immediate(u16 addr) {
+	return (PC + 1);
 }
 
-void CPU6502::ZeroPage() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+u16 CPU6502::ZeroPage(u16 addr) {
+	return addr & 0x00FF;
 }
 
-void CPU6502::ZeroPageX() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+u16 CPU6502::ZeroPageX(u16 addr) {
+	return ((u8)(addr & 0xFF) + X);
 }
 
-void CPU6502::Absolute() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+u16 CPU6502::ZeroPageY(u16 addr) {
+	return ((u8)(addr & 0xFF) + Y);
 }
 
-void CPU6502::AbsoluteX() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+u16 CPU6502::Absolute(u16 addr) {
+	return mC64->load16(addr);
 }
 
-void CPU6502::AbsoluteY() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+u16 CPU6502::AbsoluteX(u16 addr) {
+	auto newAddr = addr + X;
+	if ((newAddr & 0xFF00) != (addr & 0xFF00)) {
+		// TODO: add 1 to cycles if page boundary is crossed
+	}
+	return newAddr;
 }
 
-void CPU6502::IndirectX() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+u16 CPU6502::AbsoluteY(u16 addr) {
+	auto newAddr = addr + Y;
+	if ((newAddr & 0xFF00) != (addr & 0xFF00)) {
+		// TODO: add 1 to cycles if page boundary is crossed
+	}
+	return newAddr;
 }
 
-void CPU6502::IndirectY() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+u16 CPU6502::Indirect(u16 addr) {
+	return mC64->load16(addr);
 }
 
-void CPU6502::Implied() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+u16 CPU6502::IndirectX(u16 addr) {
+	return mC64->load8((addr & 0xFF) + X);
 }
 
-void CPU6502::Accumulator() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+u16 CPU6502::IndirectY(u16 addr) {
+	return mC64->load8((addr & 0xFF)) + Y;
 }
 
-void CPU6502::Relative() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+u16 CPU6502::Implied(u16 /* addr */) {
+	return 0;
 }
 
-void CPU6502::ZeroPageY() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+u16 CPU6502::Accumulator(u16 /* addr */) {
+	log->warn("Accumulator Addressing. Sollte normalerweise nicht aufgerufen werden können");
+	return 0;
 }
 
-void CPU6502::Indirect() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+u16 CPU6502::Relative(u16 addr) {
+	return PC + (i8)(addr & 0xFF);
 }

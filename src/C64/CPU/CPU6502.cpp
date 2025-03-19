@@ -26,9 +26,9 @@ CPU6502::Instruction CPU6502::GetNextInstruction() {
 }
 
 void CPU6502::RunOneInstruction() {
-	auto inst = GetNextInstruction();
-	(this->*(inst.InstFunc))();
-	PC += inst.length;
+	mCurrentInstruction = GetNextInstruction();
+	(this->*(mCurrentInstruction.InstFunc))();
+	PC += mCurrentInstruction.length;
 }
 
 u8 CPU6502::IOLoad8(u16 /* address */) const {

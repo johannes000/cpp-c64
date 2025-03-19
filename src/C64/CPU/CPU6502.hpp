@@ -12,7 +12,7 @@ public:
 		u8 length{0};
 		u8 cycles{0};
 		void (CPU6502::*InstFunc)() = nullptr;
-		void (CPU6502::*AddrFunc)() = nullptr;
+		u16 (CPU6502::*AddrFunc)(u16) = nullptr;
 	};
 
 public:
@@ -339,19 +339,19 @@ private:
 	};
 
 private:
-	void Immediate();
-	void ZeroPage();
-	void ZeroPageX();
-	void ZeroPageY();
-	void Absolute();
-	void AbsoluteX();
-	void AbsoluteY();
-	void Indirect();
-	void IndirectX();
-	void IndirectY();
-	void Implied();
-	void Accumulator();
-	void Relative();
+	u16 Immediate(u16 addr);
+	u16 ZeroPage(u16 addr);
+	u16 ZeroPageX(u16 addr);
+	u16 ZeroPageY(u16 addr);
+	u16 Absolute(u16 addr);
+	u16 AbsoluteX(u16 addr);
+	u16 AbsoluteY(u16 addr);
+	u16 Indirect(u16 addr);
+	u16 IndirectX(u16 addr);
+	u16 IndirectY(u16 addr);
+	u16 Implied(u16 addr);
+	u16 Accumulator(u16 addr);
+	u16 Relative(u16 addr);
 
 private:
 	void ILL(); // Illegal
