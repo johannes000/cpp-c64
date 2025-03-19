@@ -12,7 +12,7 @@ public:
 		u8 length{0};
 		u8 cycles{0};
 		void (CPU6502::*InstFunc)() = nullptr;
-		u16 (CPU6502::*AddrFunc)(u16) = nullptr;
+		u16 (CPU6502::*AddrFunc)() = nullptr;
 	};
 
 public:
@@ -20,6 +20,9 @@ public:
 	~CPU6502();
 
 	Instruction GetNextInstruction();
+	u16 mCurrentAddr;
+
+	bool mIsBranch;
 
 	void RunOneInstruction();
 
@@ -339,19 +342,19 @@ private:
 	};
 
 private:
-	u16 Immediate(u16 addr);
-	u16 ZeroPage(u16 addr);
-	u16 ZeroPageX(u16 addr);
-	u16 ZeroPageY(u16 addr);
-	u16 Absolute(u16 addr);
-	u16 AbsoluteX(u16 addr);
-	u16 AbsoluteY(u16 addr);
-	u16 Indirect(u16 addr);
-	u16 IndirectX(u16 addr);
-	u16 IndirectY(u16 addr);
-	u16 Implied(u16 addr);
-	u16 Accumulator(u16 addr);
-	u16 Relative(u16 addr);
+	u16 Immediate();
+	u16 ZeroPage();
+	u16 ZeroPageX();
+	u16 ZeroPageY();
+	u16 Absolute();
+	u16 AbsoluteX();
+	u16 AbsoluteY();
+	u16 Indirect();
+	u16 IndirectX();
+	u16 IndirectY();
+	u16 Implied();
+	u16 Accumulator();
+	u16 Relative();
 
 private:
 	void ILL(); // Illegal

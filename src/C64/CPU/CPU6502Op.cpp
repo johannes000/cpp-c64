@@ -6,7 +6,6 @@ void CPU6502::ILL() {
 }
 
 void CPU6502::LDA() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
 }
 
 void CPU6502::LDX() {
@@ -229,63 +228,66 @@ void CPU6502::RTI() {
 	log->warn("{} Noch nicht implementiert", __FUNCTION__);
 }
 
-u16 CPU6502::Immediate(u16 addr) {
+u16 CPU6502::Immediate() {
 	return (PC + 1);
 }
 
-u16 CPU6502::ZeroPage(u16 addr) {
-	return addr & 0x00FF;
+u16 CPU6502::ZeroPage() {
+	return Immediate() & 0x00FF;
 }
 
-u16 CPU6502::ZeroPageX(u16 addr) {
-	return ((u8)(addr & 0xFF) + X);
+u16 CPU6502::ZeroPageX() {
+	return ((u8)(Immediate() + X));
 }
 
-u16 CPU6502::ZeroPageY(u16 addr) {
-	return ((u8)(addr & 0xFF) + Y);
+u16 CPU6502::ZeroPageY() {
+	return ((u8)(Immediate() + Y));
 }
 
-u16 CPU6502::Absolute(u16 addr) {
-	return mC64->load16(addr);
+u16 CPU6502::Absolute() {
+	return mC64->load16(PC + 1);
 }
 
-u16 CPU6502::AbsoluteX(u16 addr) {
-	auto newAddr = addr + X;
-	if ((newAddr & 0xFF00) != (addr & 0xFF00)) {
+u16 CPU6502::AbsoluteX() {
+	auto oldAddr = Absolute();
+	auto newAddr = oldAddr + X;
+	if ((newAddr & 0xFF00) != (oldAddr & 0xFF00)) {
 		// TODO: add 1 to cycles if page boundary is crossed
 	}
 	return newAddr;
 }
 
-u16 CPU6502::AbsoluteY(u16 addr) {
-	auto newAddr = addr + Y;
-	if ((newAddr & 0xFF00) != (addr & 0xFF00)) {
+u16 CPU6502::AbsoluteY() {
+	auto oldAddr = Absolute();
+	auto newAddr = oldAddr + Y;
+	if ((newAddr & 0xFF00) != (oldAddr & 0xFF00)) {
 		// TODO: add 1 to cycles if page boundary is crossed
 	}
 	return newAddr;
 }
 
-u16 CPU6502::Indirect(u16 addr) {
-	return mC64->load16(addr);
+u16 CPU6502::Indirect() {
+	return mC64->load16(PC + 1);
 }
 
-u16 CPU6502::IndirectX(u16 addr) {
-	return mC64->load8((addr & 0xFF) + X);
+u16 CPU6502::IndirectX() {
+	return mC64->load16(PC + 1) + X;
 }
 
-u16 CPU6502::IndirectY(u16 addr) {
-	return mC64->load8((addr & 0xFF)) + Y;
+u16 CPU6502::IndirectY() {
+	return mC64->load16(PC + 1) + Y;
 }
 
-u16 CPU6502::Implied(u16 /* addr */) {
+u16 CPU6502::Implied() {
 	return 0;
 }
 
-u16 CPU6502::Accumulator(u16 /* addr */) {
+u16 CPU6502::Accumulator() {
 	log->warn("Accumulator Addressing. Sollte normalerweise nicht aufgerufen werden können");
 	return 0;
 }
 
-u16 CPU6502::Relative(u16 addr) {
-	return PC + (i8)(addr & 0xFF);
+u16 CPU6502::Relative() {
+	mIsBranch = true;
+	return PC + (i8)(mC64->load8(PC + 1));
 }

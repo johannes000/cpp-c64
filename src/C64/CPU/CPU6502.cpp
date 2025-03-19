@@ -2,12 +2,11 @@
 #include "C64/C64.hpp"
 
 CPU6502::CPU6502(C64 *c64) : Component("CPU"),
+							 mCurrentAddr(0),
+							 mIsBranch(false),
 							 mC64(c64),
-							 A(0),
-							 X(0), Y(0),
-							 PS(0),
-							 SP(0),
-							 PC(0),
+							 A(0), X(0), Y(0),
+							 PS(0), SP(0), PC(0),
 							 log(spdlog::get("CPU")) {
 	assert(OpCodes.size() == 256);
 	Reset();
@@ -26,9 +25,12 @@ CPU6502::Instruction CPU6502::GetNextInstruction() {
 }
 
 void CPU6502::RunOneInstruction() {
+	mIsBranch = false;
 	mCurrentInstruction = GetNextInstruction();
 	(this->*(mCurrentInstruction.InstFunc))();
-	PC += mCurrentInstruction.length;
+	mCurrentAddr = (this->*(mCurrentInstruction.AddrFunc))();
+	if (!mIsBranch)
+		PC += mCurrentInstruction.length;
 }
 
 u8 CPU6502::IOLoad8(u16 /* address */) const {
