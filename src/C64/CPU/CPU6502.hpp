@@ -27,6 +27,7 @@ public:
 
 	void RunOneInstruction();
 	void LogCurrentInstruction();
+	const std::string GetCurrentInstructionLog() const;
 
 	u8 IOLoad8(u16 address) const override;
 	u16 IOLoad16(u16 address) const override;
@@ -51,14 +52,14 @@ private:
 	union Processor_Status {
 		u8 data;
 		struct {
-			u8 CF : 1;	   // Carry Flag: 1 on unsigned overflow
-			u8 ZF : 1;	   // Zero Flag: 1 when all bits of a result are 0
-			u8 IF : 1;	   // Interrupt Disable Flag: when 1, no interrupt will occur (except BRK and NMI)
-			u8 DF : 1;	   // Decimal Mode Flag: 1 when CPU is in Decimal Mode
-			u8 BF : 1;	   // Break Flag: 1 when pushed by instructions (BRK / PHP) and 0 when pushed by interrupts (NMI / IRQ)
+			u8 C : 1;	   // Carry Flag: 1 on unsigned overflow
+			u8 Z : 1;	   // Zero Flag: 1 when all bits of a result are 0
+			u8 I : 1;	   // Interrupt Disable Flag: when 1, no interrupt will occur (except BRK and NMI)
+			u8 D : 1;	   // Decimal Mode Flag: 1 when CPU is in Decimal Mode
+			u8 B : 1;	   // Break Flag: 1 when pushed by instructions (BRK / PHP) and 0 when pushed by interrupts (NMI / IRQ)
 			u8 unused : 1; // Unused: always set to 1
-			u8 VF : 1;	   // Overflow Flag: 1 on signed overflow
-			u8 NF : 1;	   // Negative Flag: 1 when result is negative
+			u8 V : 1;	   // Overflow Flag: 1 on signed overflow
+			u8 N : 1;	   // Negative Flag: 1 when result is negative
 		};
 	} PS;
 	// Stack Pointer

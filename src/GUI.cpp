@@ -1,13 +1,25 @@
 #include "GUI.hpp"
 #include "Utility/Logger.hpp"
+#include "C64/C64.hpp"
 
 namespace {
-bool SHOW_DEMO_WINDOW = true;
-bool SHOW_ANOTHER_WINDOW = false;
-ImVec4 CLEAR_COLOR = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+bool showDemoStuff = false;
+bool showDemoWindow = true;
+bool showAnotherWindow = false;
+constexpr ImVec4 CLEAR_COLOR = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+constexpr ImVec4 BG_COLOR = {0.8f, 0.8f, 0.8f, 1.0f};
+constexpr ImVec4 CYAN = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
+constexpr ImVec4 MAGENTA = ImVec4(1.0f, 0.502f, 0.957f, 1.0f);
+constexpr ImVec4 YELLOW = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+constexpr ImVec4 RED = ImVec4(1.0f, 0.149f, 0.447f, 1.0f);
+constexpr ImVec4 GREEN = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+constexpr ImVec4 WHITE = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+constexpr ImVec4 GRAY = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+constexpr ImVec4 DARK_GRAY = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
 } // namespace
 
-GUI::GUI() {
+GUI::GUI(C64 *c64) : mC64(c64) {
 	log = spdlog::get("GUI");
 }
 
@@ -111,57 +123,52 @@ i32 GUI::Init() {
 	// io.Fonts->AddFontFromFileTTF("../../misc/fonts/Cousine-Regular.ttf", 15.0f);
 	// ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, nullptr, io.Fonts->GetGlyphRangesJapanese());
 	// IM_ASSERT(font != nullptr);
-
 	log->info("Init Fertig");
 
 	return 0;
 }
 
-void GUI::Render(C64 &c64) {
-
+void GUI::Render() {
 	auto &io = ImGui::GetIO();
-	(void)io;
 
 	// Start the Dear ImGui frame
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplSDL3_NewFrame();
 	ImGui::NewFrame();
+	static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
+	// We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
+	// because it would be confusing to have two docking targets within each others.
+	ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+	const ImGuiViewport *viewport = ImGui::GetMainViewport();
+	ImGui::SetNextWindowPos(viewport->WorkPos);
+	ImGui::SetNextWindowSize(viewport->WorkSize);
+	ImGui::SetNextWindowViewport(viewport->ID);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+	window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
+	window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
 
-	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
-	if (SHOW_DEMO_WINDOW)
-		ImGui::ShowDemoWindow(&SHOW_DEMO_WINDOW);
+	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
+	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
+	// all active windows docked into it will lose their parent and become undocked.
+	// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
+	// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	ImGui::Begin("DockSpace", nullptr, window_flags);
+	ImGui::PopStyleVar();
+	ImGui::PopStyleVar(2);
 
-	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
-	{
-		static float f = 0.0f;
-		static int counter = 0;
-
-		ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
-
-		ImGui::Text("This is some useful text.");		   // Display some text (you can use a format strings too)
-		ImGui::Checkbox("Demo Window", &SHOW_DEMO_WINDOW); // Edit bools storing our window open/close state
-		ImGui::Checkbox("Another Window", &SHOW_ANOTHER_WINDOW);
-
-		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);			 // Edit 1 float using a slider from 0.0f to 1.0f
-		ImGui::ColorEdit3("clear color", (float *)&CLEAR_COLOR); // Edit 3 floats representing a color
-
-		if (ImGui::Button("Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
-			counter++;
-		ImGui::SameLine();
-		ImGui::Text("counter = %d", counter);
-
-		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
-		ImGui::End();
+	// Submit the DockSpace
+	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable) {
+		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 	}
 
-	// 3. Show another simple window.
-	if (SHOW_ANOTHER_WINDOW) {
-		ImGui::Begin("Another Window", &SHOW_ANOTHER_WINDOW); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
-		ImGui::Text("Hello from another window!");
-		if (ImGui::Button("Close Me"))
-			SHOW_ANOTHER_WINDOW = false;
-		ImGui::End();
-	}
+	if (showDemoStuff)
+		ShowDemoStuff();
+	ShowMainMenuBar();
+	ShowC64CpuControls();
+	ShowC64CpuStats();
 
 	// Rendering
 	ImGui::Render();
@@ -194,4 +201,75 @@ void GUI::Destroy() {
 	SDL_GL_DestroyContext(mContext.gl_context);
 	SDL_DestroyWindow(mContext.window);
 	SDL_Quit();
+}
+
+void GUI::ShowMainMenuBar() {
+	if (ImGui::BeginMenuBar()) {
+		if (ImGui::BeginMenu("Emulator")) {
+			ImGui::MenuItem("Show Demo Windows", NULL, &showDemoStuff);
+			ImGui::EndMenu();
+		}
+		ImGui::EndMenuBar();
+	}
+	ImGui::End();
+}
+
+void GUI::ShowDemoStuff() {
+	auto io = ImGui::GetIO();
+	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
+	if (showDemoWindow)
+		ImGui::ShowDemoWindow(&showDemoWindow);
+
+	// 2. Show a simple window that we create ourselves. We use a Begin/End pair to create a named window.
+	{
+		static float f = 0.0f;
+		static int counter = 0;
+
+		ImGui::Begin("Hello, world!"); // Create a window called "Hello, world!" and append into it.
+
+		ImGui::Text("This is some useful text.");		 // Display some text (you can use a format strings too)
+		ImGui::Checkbox("Demo Window", &showDemoWindow); // Edit bools storing our window open/close state
+		ImGui::Checkbox("Another Window", &showAnotherWindow);
+
+		ImGui::SliderFloat("float", &f, 0.0f, 1.0f);			 // Edit 1 float using a slider from 0.0f to 1.0f
+		ImGui::ColorEdit3("clear color", (float *)&CLEAR_COLOR); // Edit 3 floats representing a color
+
+		if (ImGui::Button("Button")) // Buttons return true when clicked (most widgets return true when edited/activated)
+			counter++;
+		ImGui::SameLine();
+		ImGui::Text("counter = %d", counter);
+
+		ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+		ImGui::End();
+	}
+
+	// 3. Show another simple window.
+	if (showAnotherWindow) {
+		ImGui::Begin("Another Window", &showAnotherWindow); // Pass a pointer to our bool variable (the window will have a closing button that will clear the bool when clicked)
+		ImGui::Text("Hello from another window!");
+		if (ImGui::Button("Close Me"))
+			showAnotherWindow = false;
+		ImGui::End();
+	}
+}
+
+void GUI::ShowC64CpuControls() {
+	ImGui::Begin("C64 Controls");
+	if (ImGui::Button("Reset")) {
+		mC64->Reset();
+	}
+	if (ImGui::Button("Step")) {
+		mC64->RunOneInstruction();
+	}
+	ImGui::End();
+}
+
+void GUI::ShowC64CpuStats() {
+	auto cpu = mC64->GetCpu();
+
+	ImGui::Begin("6502 Stats");
+	ImGui::SameLine();
+	for (auto const &log : mC64->mCpuLogs)
+		ImGui::Text(log.c_str());
+	ImGui::End();
 }

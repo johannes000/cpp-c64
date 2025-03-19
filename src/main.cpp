@@ -12,9 +12,7 @@ int main(int, char **) {
 
 	C64 c64;
 
-	c64.RunOneInstruction();
-
-	GUI gui;
+	GUI gui(&c64);
 	auto ret = gui.Init();
 	if (ret != 0)
 		return ret;
@@ -38,7 +36,7 @@ int main(int, char **) {
 			continue;
 		}
 
-		gui.Render(c64);
+		gui.Render();
 	}
 
 	gui.Destroy();

@@ -19,12 +19,17 @@ public:
 	void store8(u16 address, u8 value);
 	void store16(u16 address, u16 value);
 
+	CPU6502 *GetCpu() { return mCPU.get(); };
+
+	std::vector<std::string> mCpuLogs;
+
 private:
 	std::unique_ptr<CPU6502> mCPU;
 
-	Memory<KERNAL_SIZE> mKernal;
 	Memory<BASIC_ROM_SIZE> mBasic;
 	Memory<CHARACTER_ROM_SIZE> mCharSet;
+	Memory<KERNAL_SIZE> mKernal;
+	Memory<RAM_SIZE> mRam;
 
 private:
 	std::shared_ptr<spdlog::logger> log;

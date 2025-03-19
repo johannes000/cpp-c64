@@ -35,7 +35,7 @@ struct Context {
 
 class GUI {
 public:
-	GUI();
+	GUI(C64 *c64);
 	~GUI() = default;
 	GUI(GUI &&) = delete;
 	GUI(const GUI &) = delete;
@@ -43,12 +43,19 @@ public:
 	GUI &operator=(const GUI &) = delete;
 
 	i32 Init();
-	void Render(C64 &c64);
+	void Render();
 	void Destroy();
+
+	void ShowMainMenuBar();
+	void ShowDemoStuff();
+	void ShowC64CpuControls();
+	void ShowC64CpuStats();
 
 	Context *GetContext() { return &mContext; };
 
 private:
+	C64 *mC64;
+
 	std::shared_ptr<spdlog::logger> log;
 	Context mContext;
 };

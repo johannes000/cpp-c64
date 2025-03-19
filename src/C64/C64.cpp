@@ -14,9 +14,10 @@ constexpr std::array<const char *, 1> BasicRoms = {
 } // namespace
 
 C64::C64() : mCPU(std::make_unique<CPU6502>(this)),
-			 mKernal("Kernal"),
 			 mBasic("Basic"),
 			 mCharSet("Char"),
+			 mKernal("Kernal"),
+			 mRam("Ram"),
 			 log(spdlog::get("C64")) {
 	Reset();
 }
@@ -25,16 +26,19 @@ C64::~C64() {
 }
 
 void C64::RunOneInstruction() {
-	for (i32 i = 0; i < 10; i++) {
-		mCPU->RunOneInstruction();
-	}
+	mCPU->RunOneInstruction();
+	mCpuLogs.push_back(mCPU->GetCurrentInstructionLog());
 }
 
 void C64::Reset() {
 	mKernal.loadFromFile(Kernals[2]);
 	mBasic.loadFromFile(CharSets[0]);
 	mCharSet.loadFromFile(BasicRoms[0]);
+
+	mRam.Reset();
 	mCPU->Reset();
+
+	mCpuLogs.clear();
 }
 
 Component *C64::Decode(u16 address, u16 &relativeAddress) {
@@ -44,7 +48,9 @@ Component *C64::Decode(u16 address, u16 &relativeAddress) {
 		return &mKernal;
 	if (AddressRange::CHARACTER_ROM.Contains(address, relativeAddress))
 		return &mCharSet;
-
+	if (AddressRange::RAM.Contains(address, relativeAddress))
+		return &mRam;
+	log->warn("Keine Component unter {:04X}", address);
 	return nullptr;
 }
 

@@ -27,6 +27,8 @@ constexpr u16 BASIC_ROM_ADDR = 0xA000;
 constexpr u16 BASIC_ROM_SIZE = kib(8);
 constexpr u16 CHARACTER_ROM_ADDR = 0xD000;
 constexpr u16 CHARACTER_ROM_SIZE = kib(4);
+constexpr u16 RAM_ADDR = 0x0000;
+constexpr u16 RAM_SIZE = kib(39);
 
 namespace AddressRange {
 struct AddressRange {
@@ -43,7 +45,8 @@ struct AddressRange {
 	u16 mSize;
 };
 
-constexpr AddressRange KERNAL(KERNAL_ADDR, KERNAL_SIZE);
 constexpr AddressRange BASIC_ROM(BASIC_ROM_ADDR, BASIC_ROM_SIZE);
 constexpr AddressRange CHARACTER_ROM(CHARACTER_ROM_ADDR, CHARACTER_ROM_SIZE);
+constexpr AddressRange KERNAL(KERNAL_ADDR, KERNAL_SIZE);
+constexpr AddressRange RAM(RAM_ADDR, RAM_SIZE);
 }; // namespace AddressRange

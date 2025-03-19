@@ -6,10 +6,15 @@ void CPU6502::ILL() {
 }
 
 void CPU6502::LDA() {
+	A = mC64->load8(mCurrentAddr);
+	PS.N = CheckBit(A, 7);
+	PS.Z = A == 0;
 }
 
 void CPU6502::LDX() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	X = mC64->load8(mCurrentAddr);
+	PS.N = CheckBit(X, 7);
+	PS.Z = X == 0;
 }
 
 void CPU6502::LDY() {
