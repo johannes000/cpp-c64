@@ -1,8 +1,9 @@
 #include "CPU6502.hpp"
 #include "C64/C64.hpp"
+#include <format>
 
 CPU6502::CPU6502(C64 *c64) : Component("CPU"),
-							 mCurrentAddr(0),
+							 mCurrentAddr(0), mCurrentAddrUnmod(0),
 							 mIsBranch(false),
 							 mC64(c64),
 							 A(0), X(0), Y(0),
@@ -29,9 +30,43 @@ void CPU6502::RunOneInstruction() {
 	mCurrentInstruction = GetNextInstruction();
 	(this->*(mCurrentInstruction.InstFunc))();
 	mCurrentAddr = (this->*(mCurrentInstruction.AddrFunc))();
+	LogCurrentInstruction();
 	if (!mIsBranch)
 		PC += mCurrentInstruction.length;
 }
+
+void CPU6502::LogCurrentInstruction() {
+	std::string addrStr;
+	if (mCurrentInstruction.AddrFunc == &CPU6502::Implied) {
+		addrStr = "(Implied)";
+	} else if (mCurrentInstruction.AddrFunc == &CPU6502::Immediate) {
+		addrStr = std::format("#${:X}", mCurrentAddr);
+	} else if (mCurrentInstruction.AddrFunc == &CPU6502::ZeroPage) {
+		addrStr = std::format("${:X}", (u8)mCurrentAddr);
+	} else if (mCurrentInstruction.AddrFunc == &CPU6502::ZeroPageX) {
+		addrStr = std::format("${:X},{:X}", (u8)mCurrentAddrUnmod, X);
+	} else if (mCurrentInstruction.AddrFunc == &CPU6502::ZeroPageY) {
+		addrStr = std::format("${:X},{:X}", (u8)mCurrentAddrUnmod, Y);
+	} else if (mCurrentInstruction.AddrFunc == &CPU6502::Absolute) {
+		addrStr = std::format("${:X}", mCurrentAddr);
+	} else if (mCurrentInstruction.AddrFunc == &CPU6502::AbsoluteX) {
+		addrStr = std::format("${:X},{:X}", mCurrentAddrUnmod, X);
+	} else if (mCurrentInstruction.AddrFunc == &CPU6502::AbsoluteY) {
+		addrStr = std::format("${:X},{:X}", mCurrentAddrUnmod, Y);
+	} else if (mCurrentInstruction.AddrFunc == &CPU6502::Indirect) {
+		addrStr = std::format("(${:X})", mCurrentAddr);
+	} else if (mCurrentInstruction.AddrFunc == &CPU6502::IndirectX) {
+		addrStr = std::format("(${:X},{:X})", mCurrentAddrUnmod, X);
+	} else if (mCurrentInstruction.AddrFunc == &CPU6502::IndirectY) {
+		addrStr = std::format("(${:X},{:X})", mCurrentAddrUnmod, Y);
+	} else if (mCurrentInstruction.AddrFunc == &CPU6502::Accumulator) {
+		addrStr = std::format("{:X}", A);
+	} else if (mCurrentInstruction.AddrFunc == &CPU6502::Relative) {
+		addrStr = std::format("{}", (i8)mCurrentAddrUnmod);
+	}
+
+	log->info("{} {}", mCurrentInstruction.Name, addrStr);
+};
 
 u8 CPU6502::IOLoad8(u16 /* address */) const {
 	return 0;
@@ -49,4 +84,5 @@ void CPU6502::IOStore16(u16 /* address */, u16 /* value */) {
 
 void CPU6502::Reset() {
 	PC = 0xFCE2;
+	SP = 0xFD;
 }

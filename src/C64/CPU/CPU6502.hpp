@@ -21,10 +21,12 @@ public:
 
 	Instruction GetNextInstruction();
 	u16 mCurrentAddr;
+	u16 mCurrentAddrUnmod; // Für Debugger
 
 	bool mIsBranch;
 
 	void RunOneInstruction();
+	void LogCurrentInstruction();
 
 	u8 IOLoad8(u16 address) const override;
 	u16 IOLoad16(u16 address) const override;

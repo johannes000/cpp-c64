@@ -249,18 +249,18 @@ u16 CPU6502::Absolute() {
 }
 
 u16 CPU6502::AbsoluteX() {
-	auto oldAddr = Absolute();
-	auto newAddr = oldAddr + X;
-	if ((newAddr & 0xFF00) != (oldAddr & 0xFF00)) {
+	mCurrentAddrUnmod = Absolute();
+	auto newAddr = mCurrentAddrUnmod + X;
+	if ((newAddr & 0xFF00) != (mCurrentAddrUnmod & 0xFF00)) {
 		// TODO: add 1 to cycles if page boundary is crossed
 	}
 	return newAddr;
 }
 
 u16 CPU6502::AbsoluteY() {
-	auto oldAddr = Absolute();
-	auto newAddr = oldAddr + Y;
-	if ((newAddr & 0xFF00) != (oldAddr & 0xFF00)) {
+	mCurrentAddrUnmod = Absolute();
+	auto newAddr = mCurrentAddrUnmod + Y;
+	if ((newAddr & 0xFF00) != (mCurrentAddrUnmod & 0xFF00)) {
 		// TODO: add 1 to cycles if page boundary is crossed
 	}
 	return newAddr;
@@ -271,11 +271,13 @@ u16 CPU6502::Indirect() {
 }
 
 u16 CPU6502::IndirectX() {
-	return mC64->load16(PC + 1) + X;
+	mCurrentAddrUnmod = mC64->load16(PC + 1);
+	return mCurrentAddrUnmod + X;
 }
 
 u16 CPU6502::IndirectY() {
-	return mC64->load16(PC + 1) + Y;
+	mCurrentAddrUnmod = mC64->load16(PC + 1);
+	return mCurrentAddrUnmod + Y;
 }
 
 u16 CPU6502::Implied() {
@@ -289,5 +291,6 @@ u16 CPU6502::Accumulator() {
 
 u16 CPU6502::Relative() {
 	mIsBranch = true;
-	return PC + (i8)(mC64->load8(PC + 1));
+	mCurrentAddrUnmod = mC64->load8(PC + 1);
+	return PC + (i8)mCurrentAddrUnmod;
 }
