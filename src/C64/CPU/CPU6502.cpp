@@ -10,11 +10,6 @@ CPU6502::CPU6502(C64 *c64) : Component("CPU"),
 							 PS(0), SP(0), PC(0),
 							 log(spdlog::get("CPU")) {
 	assert(OpCodes.size() == 256);
-	Reset();
-
-	(this->*(OpCodes[0x01].InstFunc))();
-	(this->*(OpCodes[0x02].InstFunc))();
-
 	// auto f = (this->*OpCodes[3].InstFunc)();
 }
 
@@ -91,6 +86,6 @@ void CPU6502::IOStore16(u16 /* address */, u16 /* value */) {
 }
 
 void CPU6502::Reset() {
-	PC = 0xFCE2;
+	PC = mC64->load16(0xFFFC);
 	SP = 0xFD;
 }

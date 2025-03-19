@@ -24,12 +24,12 @@ public:
 	std::vector<std::string> mCpuLogs;
 
 private:
-	std::unique_ptr<CPU6502> mCPU;
-
 	Memory<BASIC_ROM_SIZE> mBasic;
 	Memory<CHARACTER_ROM_SIZE> mCharSet;
 	Memory<KERNAL_SIZE> mKernal;
 	Memory<RAM_SIZE> mRam;
+
+	std::unique_ptr<CPU6502> mCPU;
 
 private:
 	std::shared_ptr<spdlog::logger> log;

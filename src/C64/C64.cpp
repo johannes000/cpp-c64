@@ -13,11 +13,11 @@ constexpr std::array<const char *, 1> BasicRoms = {
 	"roms/basic.901226-01.bin"};
 } // namespace
 
-C64::C64() : mCPU(std::make_unique<CPU6502>(this)),
-			 mBasic("Basic"),
+C64::C64() : mBasic("Basic"),
 			 mCharSet("Char"),
 			 mKernal("Kernal"),
 			 mRam("Ram"),
+			 mCPU(std::make_unique<CPU6502>(this)),
 			 log(spdlog::get("C64")) {
 	Reset();
 }
