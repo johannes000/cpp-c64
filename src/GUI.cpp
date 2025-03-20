@@ -266,10 +266,24 @@ void GUI::ShowC64CpuControls() {
 
 void GUI::ShowC64CpuStats() {
 	auto cpu = mC64->GetCpu();
+	auto stats = cpu->GetCpuState();
+	auto inst = cpu->GetCurrentInstrution();
 
 	ImGui::Begin("6502 Stats");
-	ImGui::SameLine();
-	for (auto const &log : mC64->mCpuLogs)
-		ImGui::Text(log.c_str());
+
+	ImGui::Text("$%02X %s %s ", inst.OpCode, inst.Name.c_str(), cpu->GetCurrentInstructionAddressString().c_str());
+
+	ImGui::Text("A: $%02X [%03d]", stats.A, stats.A);
+	ImGui::Text("X: $%02X [%03d]", stats.X, stats.X);
+	ImGui::Text("Y: $%02X [%03d]", stats.Y, stats.Y);
+	ImGui::Text("PC: $%04X [%05d]", stats.PC, stats.PC);
+	ImGui::Text("SP: $%02X [%03d]", stats.SP, stats.SP);
+	ImGui::Text("PS: $%02X [%03d]", stats.PS.data, stats.PS.data);
+
+	ImGui::Text("Flags:");
+	ImGui::Text("C: %d, Z: %d, I: %d, D: %d, B: %d, V: %d, N: %d",
+				stats.PS.C, stats.PS.Z, stats.PS.I, stats.PS.D,
+				stats.PS.B, stats.PS.V, stats.PS.N);
+
 	ImGui::End();
 }

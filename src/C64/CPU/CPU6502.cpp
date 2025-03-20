@@ -22,6 +22,7 @@ CPU6502::Instruction CPU6502::GetNextInstruction() {
 
 void CPU6502::RunOneInstruction() {
 	mIsBranch = false;
+
 	mCurrentInstruction = GetNextInstruction();
 	(this->*(mCurrentInstruction.InstFunc))();
 	mCurrentAddr = (this->*(mCurrentInstruction.AddrFunc))();
@@ -34,7 +35,7 @@ void CPU6502::LogCurrentInstruction() {
 	log->info(GetCurrentInstructionLog());
 }
 
-const std::string CPU6502::GetCurrentInstructionLog() const {
+std::string CPU6502::GetCurrentInstructionAddressString() const {
 	std::string addrStr;
 	if (mCurrentInstruction.AddrFunc == &CPU6502::Implied) {
 		addrStr = "(Implied)";
@@ -63,7 +64,12 @@ const std::string CPU6502::GetCurrentInstructionLog() const {
 	} else if (mCurrentInstruction.AddrFunc == &CPU6502::Relative) {
 		addrStr = std::format("{}", (i8)mCurrentAddrUnmod);
 	}
+	return addrStr;
+}
 
+const std::string CPU6502::GetCurrentInstructionLog() const {
+
+	auto addrStr = GetCurrentInstructionAddressString();
 	auto registerStr = std::format("A: {:02X} | X: {:02X} | Y: {:02X} | PS: {:08b} | SP: {:02X} | PC: {:02X}",
 								   A, X, Y, PS.data, SP, PC);
 	// log->info("{:X} {} {}\t{}", mC64->load8(PC), mCurrentInstruction.Name, addrStr, registerStr);
@@ -88,4 +94,14 @@ void CPU6502::IOStore16(u16 /* address */, u16 /* value */) {
 void CPU6502::Reset() {
 	PC = mC64->load16(0xFFFC);
 	SP = 0xFD;
+}
+
+void CPU6502::UpdateCpuStateSnapshot() {
+	mCpuStateSnapshot = CPUState{
+		.A = A,
+		.X = X,
+		.Y = Y,
+		.PS = PS,
+		.SP = SP,
+		.PC = PC};
 }
