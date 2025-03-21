@@ -10,6 +10,7 @@ public:
 	Debugger(C64 *c64);
 
 	void RenderDebugger();
+	void Update();
 	void ShowC64CpuControls();
 	void ShowC64CpuStats();
 	void ShowMemoryView();

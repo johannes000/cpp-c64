@@ -69,36 +69,44 @@ void Debugger::ShowMemoryRange(const char *label, const u8 *data, u16 startAddre
 		const i32 bytesPerRow = 16;
 		const i32 mitte = 7;
 
-		ImGui::BeginChild(label, ImVec2(0, 200), true);
+		ImGui::BeginChild(label, ImVec2(0, 200), true, ImGuiWindowFlags_AlwaysVerticalScrollbar);
 
-		for (u16 i = 0; i < size; i += bytesPerRow) {
-			u16 address = startAddress + i;
+		ImGuiListClipper clipper;
+		clipper.Begin((size + bytesPerRow - 1) / bytesPerRow);
 
-			ImGui::Text("%04X: ", address);
+		while (clipper.Step()) {
+			for (i32 row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row) {
+				u16 address = startAddress + row * bytesPerRow;
 
-			for (i32 j = 0; j < bytesPerRow; ++j) {
-				if (i + j < size) {
-					ImGui::SameLine(0.0f, 2.0f);
-					ImGui::Text("%02X", data[i + j]);
+				ImGui::Text("%04X: ", address);
+
+				for (i32 j = 0; j < bytesPerRow; ++j) {
+					u16 index = row * bytesPerRow + j;
+					if (index < size) {
+						ImGui::SameLine(0.0f, 1.0f);
+						ImGui::Text("%02X", data[index]);
+					}
+					if (j == mitte) {
+						ImGui::SameLine(0.0f, 1.0f);
+						ImGui::Text(" ");
+					}
 				}
-				if (j == mitte) {
-					ImGui::SameLine(0.0f, 2.0f);
-					ImGui::Text(" ");
-				}
-			}
 
-			ImGui::SameLine(0.0f, 2.0f);
-			ImGui::Text("|");
-			for (i32 j = 0; j < bytesPerRow; ++j) {
-				if (i + j < size) {
-					u8 byte = data[i + j];
-					char c = (byte >= 32 && byte < 127) ? static_cast<char>(byte) : '.';
-					ImGui::SameLine(0.0f, 2.0f);
-					ImGui::Text("%c", c);
-				}
-				if (j == mitte) {
-					ImGui::SameLine(0.0f, 2.0f);
-					ImGui::Text(" ");
+				ImGui::SameLine(0.0f, 1.0f);
+				ImGui::Text("|");
+
+				for (i32 j = 0; j < bytesPerRow; ++j) {
+					u16 index = row * bytesPerRow + j;
+					if (index < size) {
+						u8 byte = data[index];
+						char c = (byte >= 32 && byte < 127) ? static_cast<char>(byte) : '.';
+						ImGui::SameLine(0.0f, 1.0f);
+						ImGui::Text("%c", c);
+					}
+					if (j == mitte) {
+						ImGui::SameLine(0.0f, 1.0f);
+						ImGui::Text(" ");
+					}
 				}
 			}
 		}

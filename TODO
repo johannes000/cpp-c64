@@ -1,0 +1,2 @@
+Debugger:
+    ☐ Memoryview: Feld soll rot aufleuchten wenn sich der Wert seit dem letzten Update() geändert hat.
