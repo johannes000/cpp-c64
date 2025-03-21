@@ -1,5 +1,6 @@
 
 #include "C64/C64.hpp"
+#include "C64/Debugger/Debugger.hpp"
 #include "GUI.hpp"
 #include "Utility/Logger.hpp"
 
@@ -11,8 +12,9 @@ int main(int, char **) {
 	auto MEMLogger = AddLogger("MEM");
 
 	C64 c64;
+	Debugger debug(&c64);
+	GUI gui(&c64, &debug);
 
-	GUI gui(&c64);
 	auto ret = gui.Init();
 	if (ret != 0)
 		return ret;

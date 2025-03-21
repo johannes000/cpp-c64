@@ -42,6 +42,8 @@ public:
 		memset(mData, 0, size_t(size));
 	}
 
+	u8 *Data() { return mData; }
+
 private:
 	u8 *mData = new u8[size];
 	std::shared_ptr<spdlog::logger> log;

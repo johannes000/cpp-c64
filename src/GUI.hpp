@@ -27,6 +27,7 @@
 #endif
 
 class C64;
+class Debugger;
 
 struct Context {
 	SDL_Window *window;
@@ -35,7 +36,7 @@ struct Context {
 
 class GUI {
 public:
-	GUI(C64 *c64);
+	GUI(C64 *c64, Debugger *debug);
 	~GUI() = default;
 	GUI(GUI &&) = delete;
 	GUI(const GUI &) = delete;
@@ -48,13 +49,12 @@ public:
 
 	void ShowMainMenuBar();
 	void ShowDemoStuff();
-	void ShowC64CpuControls();
-	void ShowC64CpuStats();
 
 	Context *GetContext() { return &mContext; };
 
 private:
 	C64 *mC64;
+	Debugger *mDebug;
 
 	std::shared_ptr<spdlog::logger> log;
 	Context mContext;

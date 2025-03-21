@@ -21,6 +21,11 @@ public:
 
 	CPU6502 *GetCpu() { return mCPU.get(); };
 
+	u8 *GetBasicRomData() { return mBasic.Data(); }
+	u8 *GetCharSetData() { return mCharSet.Data(); }
+	u8 *GetKernalData() { return mKernal.Data(); }
+	u8 *GetRamData() { return mRam.Data(); }
+
 	std::vector<std::string> mCpuLogs;
 
 private:

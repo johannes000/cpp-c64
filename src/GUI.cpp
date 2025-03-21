@@ -1,6 +1,8 @@
 #include "GUI.hpp"
-#include "Utility/Logger.hpp"
+
 #include "C64/C64.hpp"
+#include "C64/Debugger/Debugger.hpp"
+#include "Utility/Logger.hpp"
 
 namespace {
 bool showDemoStuff = false;
@@ -19,7 +21,7 @@ constexpr ImVec4 GRAY = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 constexpr ImVec4 DARK_GRAY = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
 } // namespace
 
-GUI::GUI(C64 *c64) : mC64(c64) {
+GUI::GUI(C64 *c64, Debugger *debug) : mC64(c64), mDebug(debug) {
 	log = spdlog::get("GUI");
 }
 
@@ -167,8 +169,7 @@ void GUI::Render() {
 	if (showDemoStuff)
 		ShowDemoStuff();
 	ShowMainMenuBar();
-	ShowC64CpuControls();
-	ShowC64CpuStats();
+	mDebug->RenderDebugger();
 
 	// Rendering
 	ImGui::Render();
@@ -251,39 +252,4 @@ void GUI::ShowDemoStuff() {
 			showAnotherWindow = false;
 		ImGui::End();
 	}
-}
-
-void GUI::ShowC64CpuControls() {
-	ImGui::Begin("C64 Controls");
-	if (ImGui::Button("Reset")) {
-		mC64->Reset();
-	}
-	if (ImGui::Button("Step")) {
-		mC64->RunOneInstruction();
-	}
-	ImGui::End();
-}
-
-void GUI::ShowC64CpuStats() {
-	auto cpu = mC64->GetCpu();
-	auto stats = cpu->GetCpuState();
-	auto inst = cpu->GetCurrentInstrution();
-
-	ImGui::Begin("6502 Stats");
-
-	ImGui::Text("$%02X %s %s ", inst.OpCode, inst.Name.c_str(), cpu->GetCurrentInstructionAddressString().c_str());
-
-	ImGui::Text("A: $%02X [%03d]", stats.A, stats.A);
-	ImGui::Text("X: $%02X [%03d]", stats.X, stats.X);
-	ImGui::Text("Y: $%02X [%03d]", stats.Y, stats.Y);
-	ImGui::Text("PC: $%04X [%05d]", stats.PC, stats.PC);
-	ImGui::Text("SP: $%02X [%03d]", stats.SP, stats.SP);
-	ImGui::Text("PS: $%02X [%03d]", stats.PS.data, stats.PS.data);
-
-	ImGui::Text("Flags:");
-	ImGui::Text("C: %d, Z: %d, I: %d, D: %d, B: %d, V: %d, N: %d",
-				stats.PS.C, stats.PS.Z, stats.PS.I, stats.PS.D,
-				stats.PS.B, stats.PS.V, stats.PS.N);
-
-	ImGui::End();
 }
