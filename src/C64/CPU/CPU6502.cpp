@@ -16,8 +16,8 @@ CPU6502::CPU6502(C64 *c64) : Component("CPU"),
 CPU6502::~CPU6502() {
 }
 
-CPU6502::Instruction CPU6502::GetNextInstruction() {
-	return OpCodes[mC64->load8(PC)];
+[[nodiscard]] CPU6502::Instruction CPU6502::GetNextInstruction() {
+	return GetInstructionAtAddr(PC);
 }
 
 void CPU6502::RunOneInstruction() {
@@ -35,6 +35,10 @@ void CPU6502::RunOneInstruction() {
 
 void CPU6502::LogCurrentInstruction() {
 	log->info(GetCurrentInstructionLog());
+}
+
+[[nodiscard]] CPU6502::Instruction CPU6502::GetInstructionAtAddr(u16 addr) const {
+	return OpCodes[mC64->load8(addr)];
 }
 
 std::string CPU6502::GetCurrentInstructionAddressString() const {

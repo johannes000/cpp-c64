@@ -10,6 +10,7 @@ int main(int, char **) {
 	auto GUILogger = AddLogger("GUI");
 	auto C64Logger = AddLogger("C64");
 	auto MEMLogger = AddLogger("MEM");
+	auto DEBLogger = AddLogger("DEB");
 
 	C64 c64;
 	Debugger debug(&c64);

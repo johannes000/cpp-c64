@@ -49,4 +49,5 @@ constexpr AddressRange BASIC_ROM(BASIC_ROM_ADDR, BASIC_ROM_SIZE);
 constexpr AddressRange CHARACTER_ROM(CHARACTER_ROM_ADDR, CHARACTER_ROM_SIZE);
 constexpr AddressRange KERNAL(KERNAL_ADDR, KERNAL_SIZE);
 constexpr AddressRange RAM(RAM_ADDR, RAM_SIZE);
+
 }; // namespace AddressRange

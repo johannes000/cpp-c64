@@ -26,6 +26,19 @@ public:
 	u8 *GetKernalData() { return mKernal.Data(); }
 	u8 *GetRamData() { return mRam.Data(); }
 
+	Memory<BASIC_ROM_SIZE> *GetBasicPointer() {
+		return &mBasic;
+	}
+	Memory<CHARACTER_ROM_SIZE> *GetCharSetPointer() {
+		return &mCharSet;
+	}
+	Memory<KERNAL_SIZE> *GetKernalPointer() {
+		return &mKernal;
+	}
+	Memory<RAM_SIZE> *GetRamPointer() {
+		return &mRam;
+	}
+
 	std::vector<std::string> mCpuLogs;
 
 private:

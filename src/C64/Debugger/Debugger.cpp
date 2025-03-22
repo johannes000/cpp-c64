@@ -1,12 +1,26 @@
 #include "Debugger.hpp"
 #include "C64\C64.hpp"
 
+namespace {
+constexpr ImVec4 BG_COLOR = {0.8f, 0.8f, 0.8f, 1.0f};
+constexpr ImVec4 CYAN = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
+constexpr ImVec4 MAGENTA = ImVec4(1.0f, 0.502f, 0.957f, 1.0f);
+constexpr ImVec4 YELLOW = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
+constexpr ImVec4 RED = ImVec4(1.0f, 0.149f, 0.447f, 1.0f);
+constexpr ImVec4 GREEN = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+constexpr ImVec4 WHITE = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+constexpr ImVec4 GRAY = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+constexpr ImVec4 DARK_GRAY = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
+}; // namespace
+
 Debugger::Debugger(C64 *c64) : mC64(c64) {
+	log = spdlog::get("DEB");
 }
 
 void Debugger::RenderDebugger() {
 	ShowC64CpuControls();
 	ShowC64CpuStats();
+	ShowDecompiler();
 	ShowMemoryView();
 }
 
@@ -59,13 +73,12 @@ void Debugger::ShowC64CpuStats() {
 		ImGui::EndTable();
 	}
 
-	i32 spalte = 0;
-	auto sptext = [&spalte](const char *t) {
-		ImGui::TableSetColumnIndex(spalte++);
+	auto sptext = [](const char *t) {
+		ImGui::TableNextColumn();
 		ImGui::Text(t);
 	};
-	auto spdata = [&spalte](u8 data) {
-		ImGui::TableSetColumnIndex(spalte++);
+	auto spdata = [](u8 data) {
+		ImGui::TableNextColumn();
 		ImGui::Text("%d", data);
 	};
 
@@ -78,7 +91,6 @@ void Debugger::ShowC64CpuStats() {
 		sptext("B");
 		sptext("V");
 		sptext("N");
-		spalte = 0;
 		ImGui::TableNextRow();
 		spdata(stats.PS.C);
 		spdata(stats.PS.Z);
@@ -92,6 +104,98 @@ void Debugger::ShowC64CpuStats() {
 
 	ImGui::End();
 }
+
+void Debugger::ShowDecompiler() {
+	if (mKernalDecon.size() == 0)
+		DecompileKernal();
+
+	static ImGuiTableFlags flags = ImGuiTableFlags_RowBg;
+	static bool followPC = true;
+	static char gotoAddrInput[5] = "";
+
+	if (ImGui::Begin("Decompiler")) {
+		ImGui::Checkbox("Follow PC", &followPC);
+		ImGui::SameLine();
+		if (ImGui::Button("Goto PC")) {
+			followPC = true;
+		}
+		ImGui::SameLine();
+		ImGui::PushItemWidth(100);
+		if (ImGui::InputText("Goto Address", gotoAddrInput, sizeof(gotoAddrInput), ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_EnterReturnsTrue)) {
+			u16 addr = static_cast<u16>(strtoul(gotoAddrInput, nullptr, 16));
+			if (addr >= KERNAL_ADDR && addr <= KERNAL_ADDR + KERNAL_SIZE - 1) {
+				followPC = false;
+			}
+		}
+		ImGui::PopItemWidth();
+
+		ImGui::BeginChild("DecompilerTable", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
+		if (ImGui::BeginTable("Decompiler", 7, flags)) {
+			ImGui::TableSetupColumn("PC", ImGuiTableColumnFlags_WidthFixed, 0.0f);
+			ImGui::TableSetupColumn("Adresse", ImGuiTableColumnFlags_WidthFixed, 0.0f);
+			ImGui::TableSetupColumn("OpCode", ImGuiTableColumnFlags_WidthFixed, 0.0f);
+			ImGui::TableSetupColumn("Parameter", ImGuiTableColumnFlags_WidthFixed, 0.0f);
+			ImGui::TableSetupColumn("Zyklen", ImGuiTableColumnFlags_WidthFixed, 0.0f);
+			ImGui::TableSetupColumn("Mnemonik", ImGuiTableColumnFlags_WidthFixed, 0.0f);
+			ImGui::TableSetupColumn("Relative Adresse", ImGuiTableColumnFlags_WidthFixed, 0.0f);
+
+			ImGuiListClipper clipper;
+			clipper.Begin(mKernalDecon.size());
+
+			while (clipper.Step()) {
+				for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i) {
+					const auto &inst = mKernalDecon[i];
+					ImGui::TableNextRow();
+
+					ImGui::TableNextColumn();
+					if (inst.addr == mC64->GetCpu()->GetPC()) {
+						ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::GetColorU32(RED));
+						if (followPC)
+							ImGui::SetScrollHereY();
+						ImGui::Text(">");
+					} else {
+						ImGui::Text(" ");
+					}
+
+					ImGui::TableNextColumn();
+					ImGui::Text("%04X", inst.addr);
+
+					ImGui::TableNextColumn();
+					ImGui::Text("%02X", inst.opCode);
+
+					ImGui::TableNextColumn();
+					switch (inst.length) {
+						case 1:
+							ImGui::Text(" ");
+							break;
+						case 2:
+							ImGui::Text("%02X", inst.parameter);
+							break;
+						case 3:
+							ImGui::Text("%04X", inst.parameter);
+							break;
+						default:
+							ImGui::Text(" ");
+							break;
+					}
+
+					ImGui::TableNextColumn();
+					ImGui::Text("%i", inst.cycles);
+
+					ImGui::TableNextColumn();
+					ImGui::Text("%s", inst.mnemonic.c_str());
+
+					ImGui::TableNextColumn();
+					ImGui::Text("%s ", inst.relAddr.c_str());
+				}
+			}
+			ImGui::EndTable();
+		}
+		ImGui::EndChild();
+	}
+	ImGui::End();
+}
+
 void Debugger::ShowMemoryView() {
 	if (ImGui::Begin("Memory")) {
 		auto kernalRom = mC64->GetKernalData();
@@ -161,4 +265,30 @@ void Debugger::ShowMemoryRange(const char *label, const u8 *data, u16 startAddre
 
 		ImGui::EndChild();
 	}
+}
+
+void Debugger::DecompileKernal() {
+	log->info("Decompiling Kernal");
+	if (mKernalDecon.size() > 0)
+		return;
+	auto cpu = mC64->GetCpu();
+	auto kernal = mC64->GetKernalPointer();
+	u16 addr = 0u;
+
+	while (addr < KERNAL_SIZE) {
+		auto opCode = kernal->IOLoad8(addr);
+		auto inst = cpu->GetInstruction(opCode);
+		DebuggerDeconInst deconstructedInst{
+			.addr = (u16)(addr + KERNAL_ADDR),
+			.opCode = inst.OpCode,
+			.length = inst.length,
+			.cycles = inst.cycles,
+			.parameter = 0, // TODO
+			.relAddr = "",	// TODO
+			.mnemonic = inst.Name,
+		};
+		mKernalDecon.push_back(deconstructedInst);
+		addr += inst.length;
+	}
+	log->info("Decompiling Kernal done");
 }

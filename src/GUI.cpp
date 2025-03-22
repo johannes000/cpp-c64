@@ -10,15 +10,6 @@ bool showDemoWindow = true;
 bool showAnotherWindow = false;
 constexpr ImVec4 CLEAR_COLOR = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
-constexpr ImVec4 BG_COLOR = {0.8f, 0.8f, 0.8f, 1.0f};
-constexpr ImVec4 CYAN = ImVec4(0.0f, 1.0f, 1.0f, 1.0f);
-constexpr ImVec4 MAGENTA = ImVec4(1.0f, 0.502f, 0.957f, 1.0f);
-constexpr ImVec4 YELLOW = ImVec4(1.0f, 1.0f, 0.0f, 1.0f);
-constexpr ImVec4 RED = ImVec4(1.0f, 0.149f, 0.447f, 1.0f);
-constexpr ImVec4 GREEN = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
-constexpr ImVec4 WHITE = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-constexpr ImVec4 GRAY = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-constexpr ImVec4 DARK_GRAY = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
 } // namespace
 
 GUI::GUI(C64 *c64, Debugger *debug) : mC64(c64), mDebug(debug) {

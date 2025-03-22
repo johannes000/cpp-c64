@@ -44,6 +44,10 @@ public:
 
 	u8 *Data() { return mData; }
 
+	Memory<size> *Get() {
+		return this;
+	}
+
 private:
 	u8 *mData = new u8[size];
 	std::shared_ptr<spdlog::logger> log;

@@ -51,9 +51,13 @@ public:
 	void RunOneInstruction();
 	void LogCurrentInstruction();
 
+	auto GetPC() const { return PC; }
+
+	[[nodiscard]] Instruction GetInstructionAtAddr(u16 addr) const;
+	[[nodiscard]] Instruction GetCurrentInstrution() const { return mCurrentInstruction; }
+	[[nodiscard]] Instruction GetInstruction(u8 opCode) const { return OpCodes[opCode]; };
 	std::string GetCurrentInstructionAddressString() const;
 	const std::string GetCurrentInstructionLog() const;
-	Instruction GetCurrentInstrution() const { return mCurrentInstruction; }
 
 	u8 IOLoad8(u16 address) const override;
 	u16 IOLoad16(u16 address) const override;
