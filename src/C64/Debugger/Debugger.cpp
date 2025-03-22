@@ -28,19 +28,67 @@ void Debugger::ShowC64CpuStats() {
 
 	ImGui::Begin("6502 Stats");
 
-	ImGui::Text("$%02X %s %s ", inst.OpCode, inst.Name.c_str(), cpu->GetCurrentInstructionAddressString().c_str());
+	static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
 
-	ImGui::Text("A: $%02X [%03d]", stats.A, stats.A);
-	ImGui::Text("X: $%02X [%03d]", stats.X, stats.X);
-	ImGui::Text("Y: $%02X [%03d]", stats.Y, stats.Y);
-	ImGui::Text("PC: $%04X [%05d]", stats.PC, stats.PC);
-	ImGui::Text("SP: $%02X [%03d]", stats.SP, stats.SP);
-	ImGui::Text("PS: $%02X [%03d]", stats.PS.data, stats.PS.data);
+	auto f = [](const char *name, const char *hex, const char *dec, auto data) {
+		ImGui::TableNextRow();
+		ImGui::TableSetColumnIndex(0);
+		ImGui::Text("%s", name);
+		ImGui::TableSetColumnIndex(1);
+		ImGui::Text(hex, data);
+		ImGui::TableSetColumnIndex(2);
+		ImGui::Text(dec, data);
+	};
 
-	ImGui::Text("Flags:");
-	ImGui::Text("C: %d, Z: %d, I: %d, D: %d, B: %d, V: %d, N: %d",
-				stats.PS.C, stats.PS.Z, stats.PS.I, stats.PS.D,
-				stats.PS.B, stats.PS.V, stats.PS.N);
+	if (ImGui::BeginTable("Registers", 3, flags)) {
+
+		ImGui::TableNextRow();
+		ImGui::TableSetColumnIndex(0);
+		ImGui::Text("$%02X", inst.OpCode);
+		ImGui::TableSetColumnIndex(1);
+		ImGui::Text("%s", inst.Name.c_str());
+		ImGui::TableSetColumnIndex(2);
+		ImGui::Text("%s", cpu->GetCurrentInstructionAddressString().c_str());
+
+		f("PC", "$%04X", "[%04d]", stats.PC);
+		f("A", "$%02X", "[%04d]", stats.A);
+		f("X", "$%02X", "[%04d]", stats.X);
+		f("Y", "$%02X", "[%04d]", stats.Y);
+		f("SP", "$%02X", "[%04d]", stats.SP);
+		f("PS", "$%02X", "[%04d]", stats.PS.data);
+		ImGui::EndTable();
+	}
+
+	i32 spalte = 0;
+	auto sptext = [&spalte](const char *t) {
+		ImGui::TableSetColumnIndex(spalte++);
+		ImGui::Text(t);
+	};
+	auto spdata = [&spalte](u8 data) {
+		ImGui::TableSetColumnIndex(spalte++);
+		ImGui::Text("%d", data);
+	};
+
+	if (ImGui::BeginTable("PS", 7, flags)) {
+		ImGui::TableNextRow();
+		sptext("C");
+		sptext("Z");
+		sptext("I");
+		sptext("D");
+		sptext("B");
+		sptext("V");
+		sptext("N");
+		spalte = 0;
+		ImGui::TableNextRow();
+		spdata(stats.PS.C);
+		spdata(stats.PS.Z);
+		spdata(stats.PS.I);
+		spdata(stats.PS.D);
+		spdata(stats.PS.B);
+		spdata(stats.PS.V);
+		spdata(stats.PS.N);
+		ImGui::EndTable();
+	}
 
 	ImGui::End();
 }

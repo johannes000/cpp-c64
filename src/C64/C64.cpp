@@ -64,8 +64,8 @@ u8 C64::load8(u16 address) {
 }
 
 u16 C64::load16(u16 address) {
-	if (address % 2 != 0)
-		log->critical("Datenzugriff nicht richtig ausgerichtet. Funk: {} Addr: {:X}", __FUNCTION__, address);
+	// if (address % 2 != 0)
+	// 	log->critical("Datenzugriff nicht richtig ausgerichtet. Funk: {} Addr: {:X}", __FUNCTION__, address);
 	u16 relAddress;
 
 	auto component = Decode(address, relAddress);
@@ -83,8 +83,8 @@ void C64::store8(u16 address, u8 value) {
 }
 
 void C64::store16(u16 address, u16 value) {
-	if (address % 2 != 0)
-		log->critical("Datenzugriff nicht richtig ausgerichtet. Funk: {} Addr: {:X}", __FUNCTION__, address);
+	// if (address % 2 != 0)
+	// 	log->critical("Datenzugriff nicht richtig ausgerichtet. Funk: {} Addr: {:X}", __FUNCTION__, address);
 	u16 relAddress;
 
 	auto component = Decode(address, relAddress);

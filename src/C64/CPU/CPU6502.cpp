@@ -4,7 +4,7 @@
 
 CPU6502::CPU6502(C64 *c64) : Component("CPU"),
 							 mCurrentAddr(0), mCurrentAddrUnmod(0),
-							 mIsBranch(false),
+							 mIsJump(false),
 							 mC64(c64),
 							 A(0), X(0), Y(0),
 							 PS(0), SP(0), PC(0),
@@ -21,13 +21,15 @@ CPU6502::Instruction CPU6502::GetNextInstruction() {
 }
 
 void CPU6502::RunOneInstruction() {
-	mIsBranch = false;
+	mIsJump = false;
+
+	UpdateCpuStateSnapshot();
 
 	mCurrentInstruction = GetNextInstruction();
-	(this->*(mCurrentInstruction.InstFunc))();
 	mCurrentAddr = (this->*(mCurrentInstruction.AddrFunc))();
+	(this->*(mCurrentInstruction.InstFunc))();
 	// LogCurrentInstruction();
-	if (!mIsBranch)
+	if (!mIsJump)
 		PC += mCurrentInstruction.length;
 }
 
@@ -40,7 +42,7 @@ std::string CPU6502::GetCurrentInstructionAddressString() const {
 	if (mCurrentInstruction.AddrFunc == &CPU6502::Implied) {
 		addrStr = "(Implied)";
 	} else if (mCurrentInstruction.AddrFunc == &CPU6502::Immediate) {
-		addrStr = std::format("#${:X}", mCurrentAddr);
+		addrStr = std::format("#${:X}", mC64->load8(mCurrentAddr));
 	} else if (mCurrentInstruction.AddrFunc == &CPU6502::ZeroPage) {
 		addrStr = std::format("${:X}", (u8)mCurrentAddr);
 	} else if (mCurrentInstruction.AddrFunc == &CPU6502::ZeroPageX) {
@@ -94,6 +96,10 @@ void CPU6502::IOStore16(u16 /* address */, u16 /* value */) {
 void CPU6502::Reset() {
 	PC = mC64->load16(0xFFFC);
 	SP = 0xFD;
+	PS.data = 0;
+	A = 0;
+	X = 0;
+	Y = 0;
 }
 
 void CPU6502::UpdateCpuStateSnapshot() {
@@ -104,4 +110,14 @@ void CPU6502::UpdateCpuStateSnapshot() {
 		.PS = PS,
 		.SP = SP,
 		.PC = PC};
+}
+
+void CPU6502::PushToStack(u8 val) {
+	mC64->store8(SP, val);
+	SP--;
+}
+
+void CPU6502::PushAddressToStack(u16 addr) {
+	PushToStack(addr & 0xFF);
+	PushToStack((addr & 0xFF00) >> 8);
 }

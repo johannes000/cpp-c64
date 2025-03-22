@@ -46,7 +46,7 @@ public:
 	u16 mCurrentAddr;
 	u16 mCurrentAddrUnmod; // Für Debugger
 
-	bool mIsBranch;
+	bool mIsJump;
 
 	void RunOneInstruction();
 	void LogCurrentInstruction();
@@ -69,6 +69,8 @@ public:
 
 private:
 	void UpdateCpuStateSnapshot();
+	void PushToStack(u8 val);
+	void PushAddressToStack(u16 addr);
 
 private:
 	C64 *mC64;

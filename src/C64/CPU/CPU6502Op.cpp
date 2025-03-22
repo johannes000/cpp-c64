@@ -54,7 +54,9 @@ void CPU6502::TSX() {
 }
 
 void CPU6502::TXS() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Transfer Index X to Stack Register
+	// X -> SP
+	SP = X;
 }
 
 void CPU6502::PHA() {
@@ -98,6 +100,11 @@ void CPU6502::SBC() {
 }
 
 void CPU6502::CMP() {
+	// Compare sets flags as if a subtraction had been carried out.
+	// If the value in the accumulator is equal or greater than the compared value, the Carry will be set.
+	// The equal (Z) and negative (N) flags will be set based on equality or lack thereof and the sign (i.e. A>=$80) of the accumulator.
+	// TODO: + add 1 cycle if page boundary crossed
+	auto val = mC64->load8(mCurrentAddr);
 	log->warn("{} Noch nicht implementiert", __FUNCTION__);
 }
 
@@ -154,7 +161,11 @@ void CPU6502::JMP() {
 }
 
 void CPU6502::JSR() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Jump to New Location Saving Return Address
+	// Pushed PC - 1 relativ zur nächsten Inst
+	PushAddressToStack(PC + mCurrentInstruction.length - 1);
+	PC = mCurrentAddr;
+	mIsJump = true;
 }
 
 void CPU6502::RTS() {
@@ -194,19 +205,27 @@ void CPU6502::BVS() {
 }
 
 void CPU6502::CLC() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Clear Carry Flag
+	// 0 -> C
+	PS.C = 0;
 }
 
 void CPU6502::CLD() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Clear Decimal Mode
+	// 0 -> D
+	PS.D = 0;
 }
 
 void CPU6502::CLI() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Clear Interrupt Disable Bit
+	// 0 -> I
+	PS.I = 0;
 }
 
 void CPU6502::CLV() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Clear Overflow Flag
+	// 0 -> V
+	PS.V = 0;
 }
 
 void CPU6502::SEC() {
@@ -218,7 +237,7 @@ void CPU6502::SED() {
 }
 
 void CPU6502::SEI() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	PS.I = 1;
 }
 
 void CPU6502::BRK() {
@@ -295,7 +314,7 @@ u16 CPU6502::Accumulator() {
 }
 
 u16 CPU6502::Relative() {
-	mIsBranch = true;
+	mIsJump = true;
 	mCurrentAddrUnmod = mC64->load8(PC + 1);
 	return PC + (i8)mCurrentAddrUnmod;
 }
