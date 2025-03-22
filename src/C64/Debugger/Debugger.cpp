@@ -46,22 +46,22 @@ void Debugger::ShowC64CpuStats() {
 
 	auto f = [](const char *name, const char *hex, const char *dec, auto data) {
 		ImGui::TableNextRow();
-		ImGui::TableSetColumnIndex(0);
+		ImGui::TableNextColumn();
 		ImGui::Text("%s", name);
-		ImGui::TableSetColumnIndex(1);
+		ImGui::TableNextColumn();
 		ImGui::Text(hex, data);
-		ImGui::TableSetColumnIndex(2);
+		ImGui::TableNextColumn();
 		ImGui::Text(dec, data);
 	};
 
 	if (ImGui::BeginTable("Registers", 3, flags)) {
 
 		ImGui::TableNextRow();
-		ImGui::TableSetColumnIndex(0);
+		ImGui::TableNextColumn();
 		ImGui::Text("$%02X", inst.OpCode);
-		ImGui::TableSetColumnIndex(1);
+		ImGui::TableNextColumn();
 		ImGui::Text("%s", inst.Name.c_str());
-		ImGui::TableSetColumnIndex(2);
+		ImGui::TableNextColumn();
 		ImGui::Text("%s", cpu->GetCurrentInstructionAddressString().c_str());
 
 		f("PC", "$%04X", "[%04d]", stats.PC);
@@ -73,32 +73,20 @@ void Debugger::ShowC64CpuStats() {
 		ImGui::EndTable();
 	}
 
-	auto sptext = [](const char *t) {
-		ImGui::TableNextColumn();
-		ImGui::Text(t);
-	};
-	auto spdata = [](u8 data) {
-		ImGui::TableNextColumn();
-		ImGui::Text("%d", data);
-	};
-
-	if (ImGui::BeginTable("PS", 7, flags)) {
+	const std::vector<const char *> vt{"C", "Z", "I", "D", "B", "V", "N"};
+	const std::vector<u16> vd{stats.PS.C, stats.PS.Z, stats.PS.I, stats.PS.D, stats.PS.B, stats.PS.V, stats.PS.N};
+	assert(vt.size() == vd.size());
+	if (ImGui::BeginTable("PS", vt.size(), flags)) {
 		ImGui::TableNextRow();
-		sptext("C");
-		sptext("Z");
-		sptext("I");
-		sptext("D");
-		sptext("B");
-		sptext("V");
-		sptext("N");
+		for (const auto &text : vt) {
+			ImGui::TableNextColumn();
+			ImGui::Text(text);
+		}
 		ImGui::TableNextRow();
-		spdata(stats.PS.C);
-		spdata(stats.PS.Z);
-		spdata(stats.PS.I);
-		spdata(stats.PS.D);
-		spdata(stats.PS.B);
-		spdata(stats.PS.V);
-		spdata(stats.PS.N);
+		for (const auto &data : vd) {
+			ImGui::TableNextColumn();
+			ImGui::Text("%d", data);
+		}
 		ImGui::EndTable();
 	}
 
@@ -106,28 +94,18 @@ void Debugger::ShowC64CpuStats() {
 }
 
 void Debugger::ShowDecompiler() {
+	auto cpu = mC64->GetCpu();
+	auto pc = cpu->GetPC();
 	if (mKernalDecon.size() == 0)
 		DecompileKernal();
 
 	static ImGuiTableFlags flags = ImGuiTableFlags_RowBg;
-	static bool followPC = true;
-	static char gotoAddrInput[5] = "";
+	static bool enableTrack = true;
+	static u16 trackAddr = cpu->GetPC();
 
 	if (ImGui::Begin("Decompiler")) {
-		ImGui::Checkbox("Follow PC", &followPC);
-		ImGui::SameLine();
-		if (ImGui::Button("Goto PC")) {
-			followPC = true;
-		}
-		ImGui::SameLine();
-		ImGui::PushItemWidth(100);
-		if (ImGui::InputText("Goto Address", gotoAddrInput, sizeof(gotoAddrInput), ImGuiInputTextFlags_CharsHexadecimal | ImGuiInputTextFlags_EnterReturnsTrue)) {
-			u16 addr = static_cast<u16>(strtoul(gotoAddrInput, nullptr, 16));
-			if (addr >= KERNAL_ADDR && addr <= KERNAL_ADDR + KERNAL_SIZE - 1) {
-				followPC = false;
-			}
-		}
-		ImGui::PopItemWidth();
+		ImGui::Checkbox("Follow PC", &enableTrack);
+		auto gotoPC = ImGui::Button("Goto PC");
 
 		ImGui::BeginChild("DecompilerTable", ImVec2(0, 0), true, ImGuiWindowFlags_HorizontalScrollbar);
 		if (ImGui::BeginTable("Decompiler", 7, flags)) {
@@ -150,7 +128,7 @@ void Debugger::ShowDecompiler() {
 					ImGui::TableNextColumn();
 					if (inst.addr == mC64->GetCpu()->GetPC()) {
 						ImGui::TableSetBgColor(ImGuiTableBgTarget_RowBg0, ImGui::GetColorU32(RED));
-						if (followPC)
+						if (enableTrack)
 							ImGui::SetScrollHereY();
 						ImGui::Text(">");
 					} else {
