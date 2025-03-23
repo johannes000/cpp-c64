@@ -8,83 +8,75 @@ void CPU6502::ILL() {
 void CPU6502::LDA() {
 	// 	Load Accumulator with Memory
 	// M -> A
-	A = mC64->load8(mCurrentAddr);
-	HandleNegativeFlag(A);
-	HandleZeroFlag(A);
+	A = GetValAtCurrentAddr();
+	HandleNZFlags(A);
 }
 
 void CPU6502::LDX() {
 	// 	Load Index X with Memory
 	// M -> X
-	X = mC64->load8(mCurrentAddr);
-	HandleNegativeFlag(X);
-	HandleZeroFlag(X);
+	X = GetValAtCurrentAddr();
+	HandleNZFlags(X);
 }
 
 void CPU6502::LDY() {
 	// Load Index Y with Memory
 	// M -> Y
-	Y = mC64->load8(mCurrentAddr);
-	HandleNegativeFlag(Y);
-	HandleZeroFlag(Y);
+	Y = GetValAtCurrentAddr();
+	HandleNZFlags(Y);
 }
 
 void CPU6502::STA() {
 	// Store Accumulator in Memory
 	// A -> M
-	A = mC64->load8(mCurrentAddr);
+	A = GetValAtCurrentAddr();
 }
 
 void CPU6502::STX() {
 	// Store Index X in Memory
 	// X->M
-	X = mC64->load8(mCurrentAddr);
+	X = GetValAtCurrentAddr();
 }
 
 void CPU6502::STY() {
 	// Sore Index Y in Memory
 	// Y->M
-	Y = mC64->load8(mCurrentAddr);
+	Y = GetValAtCurrentAddr();
 }
 
 void CPU6502::TAX() {
 	// Transfer Accumulator to Index X
 	// A->X
 	X = A;
-	HandleNegativeFlag(A);
-	HandleZeroFlag(A);
+	HandleNZFlags(A);
 }
 
 void CPU6502::TAY() {
 	// Transfer Accumulator to Index Y
 	// A -> Y
 	Y = A;
-	HandleNegativeFlag(A);
-	HandleZeroFlag(A);
+	HandleNZFlags(A);
 }
 
 void CPU6502::TXA() {
 	// Transfer Index X to Accumulator
 	// X -> A
 	A = X;
-	HandleNegativeFlag(A);
-	HandleZeroFlag(A);
+	HandleNZFlags(A);
 }
 
 void CPU6502::TYA() {
 	// Transfer Index Y to Accumulator
 	// Y -> A
 	A = Y;
-	HandleNegativeFlag(A);
-	HandleZeroFlag(A);
+	HandleNZFlags(A);
 }
 
 void CPU6502::TSX() {
 	// Transfer Index X to Stack Register
 	// X -> SP
 	X = SP;
-	HandleNegativeFlag(X);
-	HandleZeroFlag(X);
+	HandleNZFlags(X);
 }
 
 void CPU6502::TXS() {
@@ -112,8 +104,7 @@ void CPU6502::PLA() {
 	// Pull Accumulator from Stack
 	// pull A
 	A = PullFromStack();
-	HandleNegativeFlag(A);
-	HandleZeroFlag(A);
+	HandleNZFlags(A);
 }
 
 void CPU6502::PLP() {
@@ -130,37 +121,56 @@ void CPU6502::PLP() {
 void CPU6502::AND() {
 	// AND Memory with Accumulator
 	// A AND M -> A
-	A &= mC64->load8(mCurrentAddr);
-	HandleNegativeFlag(A);
-	HandleZeroFlag(A);
+	A &= GetValAtCurrentAddr();
+	HandleNZFlags(A);
 }
 
 void CPU6502::EOR() {
 	// Exclusive-OR Memory with Accumulator
 	// A EOR M -> A
-	A ^= mC64->load8(mCurrentAddr);
-	HandleNegativeFlag(A);
-	HandleZeroFlag(A);
+	A ^= GetValAtCurrentAddr();
+	HandleNZFlags(A);
 }
 
 void CPU6502::ORA() {
 	// OR Memory with Accumulator
 	// A OR M -> A
-	A |= mC64->load8(mCurrentAddr);
-	HandleNegativeFlag(A);
-	HandleZeroFlag(A);
+	A |= GetValAtCurrentAddr();
+	HandleNZFlags(A);
 }
 
 void CPU6502::BIT() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Read the operand and set the N and V flags from the value (from the highest and next-to-highest bit respectively). Then take the operand, and AND it with the accumulator and evaluate the Z-flag.
+	// N <= Operand(7)
+	// V <= Operand(6)
+	// Tmp <= Operand & AC
+	// Z <= Z(Tmp)
+	auto val = GetValAtCurrentAddr();
+	PS.N = CheckBit(val, 7);
+	PS.V = CheckBit(val, 6);
+	auto temp = val & A;
+	PS.Z = temp == 0;
 }
 
 void CPU6502::ADC() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Add Memory to Accumulator with Carry
+	// A + M + C -> A, C
+	// TODO: Carryflag checken
+	u8 val = mC64->load16(mCurrentAddr);
+	u8 temp = A + val + PS.C;
+	u16 temp16 = A + val + PS.C;
+	if ((u16)temp != temp16)
+		PS.C = 1;
+	A = temp;
+	HandleNZFlags(A);
 }
 
 void CPU6502::SBC() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Subtract with Carry
+	// A,Z,C,N = A-M-(1-C)
+	// This instruction subtracts the contents of a memory location to the accumulator
+	// together with the not of the carry bit. If overflow occurs the carry bit is clear,
+	// this enables multiple byte subtraction to be performed.
 }
 
 void CPU6502::CMP() {
@@ -168,7 +178,7 @@ void CPU6502::CMP() {
 	// If the value in the accumulator is equal or greater than the compared value, the Carry will be set.
 	// The equal (Z) and negative (N) flags will be set based on equality or lack thereof and the sign (i.e. A>=$80) of the accumulator.
 	// TODO: + add 1 cycle if page boundary crossed
-	auto val = mC64->load8(mCurrentAddr);
+	auto val = GetValAtCurrentAddr();
 	log->warn("{} Noch nicht implementiert", __FUNCTION__);
 }
 

@@ -77,11 +77,14 @@ private:
 	void PushToStack(u8 val);
 	void PushAddressToStack(u16 addr);
 	[[nodiscard]] u8 PullFromStack();
+	[[nodiscard]] u8 GetValAtCurrentAddr();
 
 	void HandleZeroFlag(u8 val);
 	void HandleZeroFlag(u16 val);
 	void HandleNegativeFlag(u8 val);
 	void HandleNegativeFlag(u16 val);
+	void HandleNZFlags(u8 val);
+	void HandleNZFlags(u16 val);
 
 private:
 	C64 *mC64;

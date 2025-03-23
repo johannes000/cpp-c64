@@ -129,6 +129,10 @@ u8 CPU6502::PullFromStack() {
 	return mC64->load8(SP++);
 }
 
+u8 CPU6502::GetValAtCurrentAddr() {
+	return mC64->load8(mCurrentAddr);
+}
+
 void CPU6502::HandleZeroFlag(u8 val) {
 	PS.Z = val == 0 ? 1 : 0;
 }
@@ -145,4 +149,14 @@ void CPU6502::HandleNegativeFlag(u8 val) {
 void CPU6502::HandleNegativeFlag(u16 val) {
 	// TODO: Unittest
 	PS.N = CheckBit(val, 15) ? 1 : 0;
+}
+
+void CPU6502::HandleNZFlags(u8 val) {
+	HandleNegativeFlag(val);
+	HandleZeroFlag(val);
+}
+
+void CPU6502::HandleNZFlags(u16 val) {
+	HandleNegativeFlag(val);
+	HandleZeroFlag(val);
 }
