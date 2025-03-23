@@ -6,51 +6,85 @@ void CPU6502::ILL() {
 }
 
 void CPU6502::LDA() {
+	// 	Load Accumulator with Memory
+	// M -> A
 	A = mC64->load8(mCurrentAddr);
-	PS.N = CheckBit(A, 7);
-	PS.Z = A == 0;
+	HandleNegativeFlag(A);
+	HandleZeroFlag(A);
 }
 
 void CPU6502::LDX() {
+	// 	Load Index X with Memory
+	// M -> X
 	X = mC64->load8(mCurrentAddr);
-	PS.N = CheckBit(X, 7);
-	PS.Z = X == 0;
+	HandleNegativeFlag(X);
+	HandleZeroFlag(X);
 }
 
 void CPU6502::LDY() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Load Index Y with Memory
+	// M -> Y
+	Y = mC64->load8(mCurrentAddr);
+	HandleNegativeFlag(Y);
+	HandleZeroFlag(Y);
 }
 
 void CPU6502::STA() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Store Accumulator in Memory
+	// A -> M
+	A = mC64->load8(mCurrentAddr);
 }
 
 void CPU6502::STX() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Store Index X in Memory
+	// X->M
+	X = mC64->load8(mCurrentAddr);
 }
 
 void CPU6502::STY() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Sore Index Y in Memory
+	// Y->M
+	Y = mC64->load8(mCurrentAddr);
 }
 
 void CPU6502::TAX() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Transfer Accumulator to Index X
+	// A->X
+	X = A;
+	HandleNegativeFlag(A);
+	HandleZeroFlag(A);
 }
 
 void CPU6502::TAY() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Transfer Accumulator to Index Y
+	// A -> Y
+	Y = A;
+	HandleNegativeFlag(A);
+	HandleZeroFlag(A);
 }
 
 void CPU6502::TXA() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Transfer Index X to Accumulator
+	// X -> A
+	A = X;
+	HandleNegativeFlag(A);
+	HandleZeroFlag(A);
 }
 
 void CPU6502::TYA() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Transfer Index Y to Accumulator
+	// Y -> A
+	A = Y;
+	HandleNegativeFlag(A);
+	HandleZeroFlag(A);
 }
 
 void CPU6502::TSX() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Transfer Index X to Stack Register
+	// X -> SP
+	X = SP;
+	HandleNegativeFlag(X);
+	HandleZeroFlag(X);
 }
 
 void CPU6502::TXS() {
@@ -60,31 +94,61 @@ void CPU6502::TXS() {
 }
 
 void CPU6502::PHA() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Push Accumulator on Stack
+	// push A
+	PushToStack(A);
 }
 
 void CPU6502::PHP() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Push Processor Status on Stack
+	// The status register will be pushed with the break
+	// flag and bit 5 set to 1.
+	// push SR
+	PS.B = 1;
+	PushToStack(PS.data);
 }
 
 void CPU6502::PLA() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Pull Accumulator from Stack
+	// pull A
+	A = PullFromStack();
+	HandleNegativeFlag(A);
+	HandleZeroFlag(A);
 }
 
 void CPU6502::PLP() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+
+	// Pull Processor Status from Stack
+	// The status register will be pulled with the break
+	// flag and bit 5 ignored.
+	// pull SR
+	auto B = PS.B;
+	PS.data = PullFromStack();
+	PS.B = B;
 }
 
 void CPU6502::AND() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// AND Memory with Accumulator
+	// A AND M -> A
+	A &= mC64->load8(mCurrentAddr);
+	HandleNegativeFlag(A);
+	HandleZeroFlag(A);
 }
 
 void CPU6502::EOR() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Exclusive-OR Memory with Accumulator
+	// A EOR M -> A
+	A ^= mC64->load8(mCurrentAddr);
+	HandleNegativeFlag(A);
+	HandleZeroFlag(A);
 }
 
 void CPU6502::ORA() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// OR Memory with Accumulator
+	// A OR M -> A
+	A |= mC64->load8(mCurrentAddr);
+	HandleNegativeFlag(A);
+	HandleZeroFlag(A);
 }
 
 void CPU6502::BIT() {

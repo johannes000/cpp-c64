@@ -73,8 +73,15 @@ public:
 
 private:
 	void UpdateCpuStateSnapshot();
+
 	void PushToStack(u8 val);
 	void PushAddressToStack(u16 addr);
+	[[nodiscard]] u8 PullFromStack();
+
+	void HandleZeroFlag(u8 val);
+	void HandleZeroFlag(u16 val);
+	void HandleNegativeFlag(u8 val);
+	void HandleNegativeFlag(u16 val);
 
 private:
 	C64 *mC64;

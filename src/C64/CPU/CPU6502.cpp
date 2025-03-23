@@ -117,11 +117,32 @@ void CPU6502::UpdateCpuStateSnapshot() {
 }
 
 void CPU6502::PushToStack(u8 val) {
-	mC64->store8(SP, val);
-	SP--;
+	mC64->store8(SP--, val);
 }
 
 void CPU6502::PushAddressToStack(u16 addr) {
 	PushToStack(addr & 0xFF);
 	PushToStack((addr & 0xFF00) >> 8);
+}
+
+u8 CPU6502::PullFromStack() {
+	return mC64->load8(SP++);
+}
+
+void CPU6502::HandleZeroFlag(u8 val) {
+	PS.Z = val == 0 ? 1 : 0;
+}
+
+void CPU6502::HandleZeroFlag(u16 val) {
+	PS.Z = val == 0 ? 1 : 0;
+}
+
+void CPU6502::HandleNegativeFlag(u8 val) {
+	// TODO: Unittest
+	PS.N = CheckBit(val, 7) ? 1 : 0;
+}
+
+void CPU6502::HandleNegativeFlag(u16 val) {
+	// TODO: Unittest
+	PS.N = CheckBit(val, 15) ? 1 : 0;
 }
