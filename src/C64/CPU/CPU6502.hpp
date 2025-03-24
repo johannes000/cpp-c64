@@ -75,9 +75,11 @@ private:
 	void UpdateCpuStateSnapshot();
 
 	void PushToStack(u8 val);
-	void PushAddressToStack(u16 addr);
 	[[nodiscard]] u8 PullFromStack();
+	void PushAddressToStack(u16 addr);
+	[[nodiscard]] u16 PullAddressFromStack();
 	[[nodiscard]] u8 GetValAtCurrentAddr();
+	void StoreValAtCurrentAddr(u8 v);
 
 	void HandleZeroFlag(u8 val);
 	void HandleZeroFlag(u16 val);

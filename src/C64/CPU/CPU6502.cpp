@@ -125,12 +125,20 @@ void CPU6502::PushAddressToStack(u16 addr) {
 	PushToStack((addr & 0xFF00) >> 8);
 }
 
+u16 CPU6502::PullAddressFromStack() {
+	return PullFromStack() | PullFromStack() << 8;
+}
+
 u8 CPU6502::PullFromStack() {
 	return mC64->load8(SP++);
 }
 
 u8 CPU6502::GetValAtCurrentAddr() {
 	return mC64->load8(mCurrentAddr);
+}
+
+void CPU6502::StoreValAtCurrentAddr(u8 v) {
+	mC64->store8(mCurrentAddr, v);
 }
 
 void CPU6502::HandleZeroFlag(u8 val) {

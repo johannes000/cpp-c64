@@ -155,13 +155,13 @@ void CPU6502::BIT() {
 void CPU6502::ADC() {
 	// Add Memory to Accumulator with Carry
 	// A + M + C -> A, C
-	// TODO: Carryflag checken
-	u8 val = mC64->load16(mCurrentAddr);
-	u8 temp = A + val + PS.C;
-	u16 temp16 = A + val + PS.C;
-	if ((u16)temp != temp16)
+	// TODO: BCD
+	u8 val = GetValAtCurrentAddr();
+	u16 temp = A + val + PS.C;
+	if (temp > 0xFF)
 		PS.C = 1;
-	A = temp;
+	PS.V = (i16)temp < -128 || (i16)temp > 128;
+	A = (u8)(temp & 0xFF);
 	HandleNZFlags(A);
 }
 
@@ -171,111 +171,253 @@ void CPU6502::SBC() {
 	// This instruction subtracts the contents of a memory location to the accumulator
 	// together with the not of the carry bit. If overflow occurs the carry bit is clear,
 	// this enables multiple byte subtraction to be performed.
+	// TODO: BCD
+	u8 val = ~GetValAtCurrentAddr();
+	u16 temp = A + val + PS.C;
+	if (temp > 0xFF)
+		PS.C = 1;
+	PS.V = (i16)temp < -128 || (i16)temp > 128;
+	A = (u8)(temp & 0xFF);
+	HandleNZFlags(A);
 }
 
 void CPU6502::CMP() {
-	// Compare sets flags as if a subtraction had been carried out.
-	// If the value in the accumulator is equal or greater than the compared value, the Carry will be set.
-	// The equal (Z) and negative (N) flags will be set based on equality or lack thereof and the sign (i.e. A>=$80) of the accumulator.
+	// Z,C,N = A-M
+	// This instruction compares the contents of the accumulator with another memory held value and sets the zero and carry flags as appropriate.
+	// Carry Flag 	Set if A >= M
 	// TODO: + add 1 cycle if page boundary crossed
-	auto val = GetValAtCurrentAddr();
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	u8 val = GetValAtCurrentAddr();
+	u8 temp = A - val;
+	PS.C = A >= val;
+	HandleNZFlags(temp);
 }
 
 void CPU6502::CPX() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Z,C,N = X-M
+	// This instruction compares the contents of the X register with another memory held value and sets the zero and carry flags as appropriate.
+	u8 val = GetValAtCurrentAddr();
+	u8 temp = X - val;
+	PS.C = X >= val;
+	HandleNZFlags(temp);
 }
 
 void CPU6502::CPY() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	u8 val = GetValAtCurrentAddr();
+	u8 temp = Y - val;
+	PS.C = Y >= val;
+	HandleNZFlags(temp);
 }
 
 void CPU6502::INC() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Increment Memory
+	// M,Z,N = M+1
+	// Adds one to the value held at a specified memory location setting the zero and negative flags as appropriate.
+	u8 res = GetValAtCurrentAddr() + 1;
+	HandleNZFlags(res);
+	StoreValAtCurrentAddr(res);
 }
 
 void CPU6502::INX() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// X,Z,N = X+1
+	// Adds one to the X register setting the zero and negative flags as appropriate.
+	++X;
+	HandleNZFlags(X);
 }
 
 void CPU6502::INY() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Y,Z,N = Y+1
+	// Adds one to the Y register setting the zero and negative flags as appropriate.
+	++Y;
+	HandleNZFlags(Y);
 }
 
 void CPU6502::DEC() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Wie Inc
+	u8 res = GetValAtCurrentAddr() - 1;
+	HandleNZFlags(res);
+	StoreValAtCurrentAddr(res);
 }
 
 void CPU6502::DEX() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Wie Inc
+	--X;
+	HandleNZFlags(X);
 }
 
 void CPU6502::DEY() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Wie Inc
+	--Y;
+	HandleNZFlags(Y);
 }
 
 void CPU6502::ASL() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Arithmetic Shift Left
+	// A,Z,C,N = M*2 or M,Z,C,N = M*2
+	// This operation shifts all the bits of the accumulator or memory contents one bit left.
+	// Bit 0 is set to 0 and bit 7 is placed in the carry flag.
+	// The effect of this operation is to multiply the memory contents by 2 (ignoring 2's complement considerations),
+	// setting the carry if the result will not fit in 8 bits.
+	bool isA = mCurrentInstruction.AddrFunc == &CPU6502::Accumulator;
+	u16 val = isA ? A : GetValAtCurrentAddr();
+	val <<= 1;
+	PS.C = CheckBit(val, 8);
+	HandleNZFlags(val);
+	if (isA)
+		A = val;
+	else
+		StoreValAtCurrentAddr(val);
 }
 
 void CPU6502::LSR() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Logical shift right
+	// A,C,Z,N = A/2 or M,C,Z,N = M/2
+	// Each of the bits in A or M is shift one place to the right. The bit that was in bit 0 is shifted into the carry flag. Bit 7 is set to zero.
+	bool isA = mCurrentInstruction.AddrFunc == &CPU6502::Accumulator;
+	u8 val = isA ? A : GetValAtCurrentAddr();
+	PS.C = CheckBit(val, 0);
+	val >>= 1;
+	HandleNZFlags(val);
+	if (isA)
+		A = val;
+	else
+		StoreValAtCurrentAddr(val);
 }
 
 void CPU6502::ROL() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Rotate Left
+	// Move each of the bits in either A or M one place to the left.
+	// Bit 0 is filled with the current value of the carry flag whilst the old bit 7 becomes the new carry flag value.
+	bool isA = mCurrentInstruction.AddrFunc == &CPU6502::Accumulator;
+	u8 val = isA ? A : GetValAtCurrentAddr();
+	u8 tmp = val;
+	val <<= 1;
+	SetBitTo(val, 0, PS.C);
+	PS.C = CheckBit(tmp, 7);
+	HandleNZFlags(val);
+	if (isA)
+		A = val;
+	else
+		StoreValAtCurrentAddr(val);
 }
 
 void CPU6502::ROR() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Rotate Right
+	// Move each of the bits in either A or M one place to the right.
+	// Bit 7 is filled with the current value of the carry flag whilst the old bit 0 becomes the new carry flag value.
+	bool isA = mCurrentInstruction.AddrFunc == &CPU6502::Accumulator;
+	u8 val = isA ? A : GetValAtCurrentAddr();
+	u8 tmp = val;
+	val >>= 1;
+	SetBitTo(val, 7, PS.C);
+	PS.C = CheckBit(tmp, 0);
+	HandleNZFlags(val);
+	if (isA)
+		A = val;
+	else
+		StoreValAtCurrentAddr(val);
 }
 
 void CPU6502::JMP() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Jump
+	// Sets the program counter to the address specified by the operand.
+	PC = mCurrentAddr;
+	mIsJump = true;
 }
 
 void CPU6502::JSR() {
-	// Jump to New Location Saving Return Address
-	// Pushed PC - 1 relativ zur nächsten Inst
+	// The JSR instruction pushes the address (minus one) of the return point
+	// on to the stack and then sets the program counter to the target memory address.
 	PushAddressToStack(PC + mCurrentInstruction.length - 1);
 	PC = mCurrentAddr;
 	mIsJump = true;
 }
 
 void CPU6502::RTS() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Return from Subroutine
+	// The RTS instruction is used at the end of a subroutine to return to the calling routine.
+	// It pulls the program counter (minus one) from the stack.
+	// TODO: Minus One?
+	PC = PullFromStack();
+	mIsJump = true;
 }
 
 void CPU6502::BCC() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Branch if Carry Clear
+	// If the carry flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
+	// TODO: Cycles +1 if branch succeeds +2 if to a new page
+	if (!PS.C) {
+		PC += (i8)GetValAtCurrentAddr();
+		mIsJump = true;
+	}
 }
 
 void CPU6502::BCS() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Branch if Carry Set
+	// TODO: Cycles +1 if branch succeeds +2 if to a new page
+	if (PS.C) {
+		PC += (i8)GetValAtCurrentAddr();
+		mIsJump = true;
+	}
 }
 
 void CPU6502::BEQ() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Branch if Equal
+	// If the zero flag is set then add the relative displacement to the program counter to cause a branch to a new location.
+	// TODO: Cycles +1 if branch succeeds +2 if to a new page
+	if (PS.Z) {
+		PC += (i8)GetValAtCurrentAddr();
+		mIsJump = true;
+	}
 }
 
 void CPU6502::BMI() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Branch if Minus
+	// If the negative flag is set then add the relative displacement to the program counter to cause a branch to a new location.
+	// TODO: Cycles +1 if branch succeeds +2 if to a new page
+	if (PS.N) {
+		PC += (i8)GetValAtCurrentAddr();
+		mIsJump = true;
+	}
 }
 
 void CPU6502::BNE() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Branch if Not Equal
+	// If the zero flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
+	// TODO: Cycles +1 if branch succeeds +2 if to a new page
+	if (!PS.Z) {
+		PC += (i8)GetValAtCurrentAddr();
+		mIsJump = true;
+	}
 }
 
 void CPU6502::BPL() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Branch if Positive
+	// If the negative flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
+	// TODO: Cycles +1 if branch succeeds +2 if to a new page
+	if (!PS.N) {
+		PC += (i8)GetValAtCurrentAddr();
+		mIsJump = true;
+	}
 }
 
 void CPU6502::BVC() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Branch if Overflow Clear
+	// If the overflow flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
+	// TODO: Cycles +1 if branch succeeds +2 if to a new page
+	if (!PS.V) {
+		PC += (i8)GetValAtCurrentAddr();
+		mIsJump = true;
+	}
 }
 
 void CPU6502::BVS() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Branch if Overflow Set
+	// If the overflow flag is set then add the relative displacement to the program counter to cause a branch to a new location.
+	// TODO: Cycles +1 if branch succeeds +2 if to a new page
+	if (PS.V) {
+		PC += (i8)GetValAtCurrentAddr();
+		mIsJump = true;
+	}
 }
 
 void CPU6502::CLC() {
@@ -303,27 +445,43 @@ void CPU6502::CLV() {
 }
 
 void CPU6502::SEC() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Set Carry Flag
+	// C = 1
+	PS.C = 1;
 }
 
 void CPU6502::SED() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Set Decimal Flag
+	// D = 1
+	PS.D = 1;
 }
 
 void CPU6502::SEI() {
+	// Set Interrupt Disable
+	// I = 1
 	PS.I = 1;
 }
 
 void CPU6502::BRK() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Force Interrupt
+	// The BRK instruction forces the generation of an interrupt request.
+	// The program counter and processor status are pushed on the stack then the IRQ interrupt vector at $FFFE/F
+	// is loaded into the PC and the break flag in the status set to one.
+	PushAddressToStack(PC);
+	PS.B = 1;
+	PushToStack(PS.data);
+	PS.B = 0;
+	PC = mC64->load16(0xFFFE);
 }
 
 void CPU6502::NOP() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
 }
 
 void CPU6502::RTI() {
-	log->warn("{} Noch nicht implementiert", __FUNCTION__);
+	// Return from Interrupt
+	// The RTI instruction is used at the end of an interrupt processing routine. It pulls the processor flags from the stack followed by the program counter.
+	PS.data = PullFromStack();
+	PC = PullAddressFromStack();
 }
 
 u16 CPU6502::Immediate() {
