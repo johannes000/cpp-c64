@@ -337,7 +337,7 @@ void CPU6502::RTS() {
 	// The RTS instruction is used at the end of a subroutine to return to the calling routine.
 	// It pulls the program counter (minus one) from the stack.
 	// TODO: Minus One?
-	PC = PullFromStack();
+	PC = PullAddressFromStack() + 1;
 	mIsJump = true;
 }
 
@@ -345,79 +345,55 @@ void CPU6502::BCC() {
 	// Branch if Carry Clear
 	// If the carry flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
 	// TODO: Cycles +1 if branch succeeds +2 if to a new page
-	if (!PS.C) {
-		PC += (i8)GetValAtCurrentAddr();
-		mIsJump = true;
-	}
+	Branch(!PS.C);
 }
 
 void CPU6502::BCS() {
 	// Branch if Carry Set
 	// TODO: Cycles +1 if branch succeeds +2 if to a new page
-	if (PS.C) {
-		PC += (i8)GetValAtCurrentAddr();
-		mIsJump = true;
-	}
+	Branch(PS.C);
 }
 
 void CPU6502::BEQ() {
 	// Branch if Equal
 	// If the zero flag is set then add the relative displacement to the program counter to cause a branch to a new location.
 	// TODO: Cycles +1 if branch succeeds +2 if to a new page
-	if (PS.Z) {
-		PC += (i8)GetValAtCurrentAddr();
-		mIsJump = true;
-	}
+	Branch(PS.Z);
 }
 
 void CPU6502::BMI() {
 	// Branch if Minus
 	// If the negative flag is set then add the relative displacement to the program counter to cause a branch to a new location.
 	// TODO: Cycles +1 if branch succeeds +2 if to a new page
-	if (PS.N) {
-		PC += (i8)GetValAtCurrentAddr();
-		mIsJump = true;
-	}
+	Branch(PS.N);
 }
 
 void CPU6502::BNE() {
 	// Branch if Not Equal
 	// If the zero flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
 	// TODO: Cycles +1 if branch succeeds +2 if to a new page
-	if (!PS.Z) {
-		PC += (i8)GetValAtCurrentAddr();
-		mIsJump = true;
-	}
+	Branch(!PS.Z);
 }
 
 void CPU6502::BPL() {
 	// Branch if Positive
 	// If the negative flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
 	// TODO: Cycles +1 if branch succeeds +2 if to a new page
-	if (!PS.N) {
-		PC += (i8)GetValAtCurrentAddr();
-		mIsJump = true;
-	}
+	Branch(!PS.N);
 }
 
 void CPU6502::BVC() {
 	// Branch if Overflow Clear
 	// If the overflow flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
 	// TODO: Cycles +1 if branch succeeds +2 if to a new page
-	if (!PS.V) {
-		PC += (i8)GetValAtCurrentAddr();
-		mIsJump = true;
-	}
+	Branch(!PS.V);
 }
 
 void CPU6502::BVS() {
 	// Branch if Overflow Set
 	// If the overflow flag is set then add the relative displacement to the program counter to cause a branch to a new location.
 	// TODO: Cycles +1 if branch succeeds +2 if to a new page
-	if (PS.V) {
-		PC += (i8)GetValAtCurrentAddr();
-		mIsJump = true;
-	}
+	Branch(PS.V);
 }
 
 void CPU6502::CLC() {

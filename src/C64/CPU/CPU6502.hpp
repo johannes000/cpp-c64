@@ -67,6 +67,10 @@ public:
 
 	void Reset();
 
+	u16 GetCurrentAddress() const {
+		return mCurrentAddr;
+	}
+
 	CPUState GetCpuState() const {
 		return mCpuStateSnapshot;
 	}
@@ -400,6 +404,7 @@ private:
 	u16 Relative();
 
 private:
+	void Branch(bool f);
 	void ILL(); // Illegal
 	void LDA(); // Load Accumulator
 	void LDX(); // Load X Register

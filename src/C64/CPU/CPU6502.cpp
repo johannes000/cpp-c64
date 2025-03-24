@@ -22,15 +22,13 @@ CPU6502::~CPU6502() {
 
 void CPU6502::RunOneInstruction() {
 	mIsJump = false;
-
-	UpdateCpuStateSnapshot();
-
 	mCurrentInstruction = GetNextInstruction();
 	mCurrentAddr = (this->*(mCurrentInstruction.AddrFunc))();
 	(this->*(mCurrentInstruction.InstFunc))();
-	// LogCurrentInstruction();
+	LogCurrentInstruction();
 	if (!mIsJump)
 		PC += mCurrentInstruction.length;
+	UpdateCpuStateSnapshot();
 }
 
 void CPU6502::LogCurrentInstruction() {
@@ -126,11 +124,13 @@ void CPU6502::PushAddressToStack(u16 addr) {
 }
 
 u16 CPU6502::PullAddressFromStack() {
-	return PullFromStack() | PullFromStack() << 8;
+	u8 l = PullFromStack();
+	u8 h = PullFromStack();
+	return h | l << 8;
 }
 
 u8 CPU6502::PullFromStack() {
-	return mC64->load8(SP++);
+	return mC64->load8(++SP);
 }
 
 u8 CPU6502::GetValAtCurrentAddr() {
@@ -167,4 +167,11 @@ void CPU6502::HandleNZFlags(u8 val) {
 void CPU6502::HandleNZFlags(u16 val) {
 	HandleNegativeFlag(val);
 	HandleZeroFlag(val);
+}
+
+void CPU6502::Branch(bool f) {
+	if (f) {
+		PC = mCurrentAddr;
+		mIsJump = true;
+	}
 }

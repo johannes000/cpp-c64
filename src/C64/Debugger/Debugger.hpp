@@ -3,6 +3,7 @@
 #include <Utility\Includes.hpp>
 #include "imgui.h"
 
+class CPU6502;
 class C64;
 
 struct DebuggerDeconInst {
@@ -16,6 +17,9 @@ struct DebuggerDeconInst {
 };
 
 class Debugger {
+	friend class CPU6502;
+	friend class C64;
+
 public:
 	Debugger(C64 *c64);
 

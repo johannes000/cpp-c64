@@ -1,5 +1,6 @@
 #include "Debugger.hpp"
 #include "C64\C64.hpp"
+#include "C64\CPU\CPU6502.hpp"
 
 namespace {
 constexpr ImVec4 BG_COLOR = {0.8f, 0.8f, 0.8f, 1.0f};
@@ -195,6 +196,8 @@ void Debugger::ShowMemoryView() {
 }
 
 void Debugger::ShowMemoryRange(const char *label, const u8 *data, u16 startAddress, u16 size) {
+	auto cpu = mC64->GetCpu();
+	auto cState = cpu->GetCpuState();
 	if (ImGui::CollapsingHeader(label)) {
 		const i32 bytesPerRow = 16;
 		const i32 mitte = 7;
@@ -203,6 +206,7 @@ void Debugger::ShowMemoryRange(const char *label, const u8 *data, u16 startAddre
 
 		ImGuiListClipper clipper;
 		clipper.Begin((size + bytesPerRow - 1) / bytesPerRow);
+		const std::vector<u16> important{cState.PC, cState.SP, cpu->GetCurrentAddress()};
 
 		while (clipper.Step()) {
 			for (i32 row = clipper.DisplayStart; row < clipper.DisplayEnd; ++row) {
@@ -211,10 +215,18 @@ void Debugger::ShowMemoryRange(const char *label, const u8 *data, u16 startAddre
 				ImGui::Text("%04X: ", address);
 
 				for (i32 j = 0; j < bytesPerRow; ++j) {
+					bool highlight = false;
+					u16 fullAddress = address + j;
+					if (std::find(important.begin(), important.end(), fullAddress) != important.end())
+						highlight = true;
 					u16 index = row * bytesPerRow + j;
 					if (index < size) {
 						ImGui::SameLine(0.0f, 1.0f);
+						if (highlight)
+							ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(0, 255, 0, 255));
 						ImGui::Text("%02X", data[index]);
+						if (highlight)
+							ImGui::PopStyleColor();
 					}
 					if (j == mitte) {
 						ImGui::SameLine(0.0f, 1.0f);
@@ -226,11 +238,13 @@ void Debugger::ShowMemoryRange(const char *label, const u8 *data, u16 startAddre
 				ImGui::Text("|");
 
 				for (i32 j = 0; j < bytesPerRow; ++j) {
+
 					u16 index = row * bytesPerRow + j;
 					if (index < size) {
 						u8 byte = data[index];
 						char c = (byte >= 32 && byte < 127) ? static_cast<char>(byte) : '.';
 						ImGui::SameLine(0.0f, 1.0f);
+
 						ImGui::Text("%c", c);
 					}
 					if (j == mitte) {
