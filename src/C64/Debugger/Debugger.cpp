@@ -17,14 +17,14 @@ constexpr ImVec4 DARK_GRAY = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
 Debugger::Debugger(C64 *c64) : mC64(c64) {
 }
 
-void Debugger::RenderDebugger() {
+auto Debugger::RenderDebugger() -> void {
 	ShowC64CpuControls();
 	ShowC64CpuStats();
 	ShowDecompiler();
 	ShowMemoryView();
 }
 
-void Debugger::ShowC64CpuControls() {
+auto Debugger::ShowC64CpuControls() -> void {
 	ImGui::Begin("C64 Controls");
 	if (ImGui::Button("Reset")) {
 		mC64->Reset();
@@ -35,7 +35,7 @@ void Debugger::ShowC64CpuControls() {
 	ImGui::End();
 }
 
-void Debugger::ShowC64CpuStats() {
+auto Debugger::ShowC64CpuStats() -> void {
 	auto cpu = mC64->GetCpu();
 	auto stats = cpu->GetCpuState();
 	auto inst = cpu->GetCurrentInstrution();
@@ -93,7 +93,7 @@ void Debugger::ShowC64CpuStats() {
 	ImGui::End();
 }
 
-void Debugger::ShowDecompiler() {
+auto Debugger::ShowDecompiler() -> void {
 	auto cpu = mC64->GetCpu();
 	auto pc = cpu->GetPC();
 	if (mKernalDecon.size() == 0)
@@ -158,7 +158,7 @@ void Debugger::ShowDecompiler() {
 	ImGui::End();
 }
 
-void Debugger::ShowMemoryView() {
+auto Debugger::ShowMemoryView() -> void {
 	if (ImGui::Begin("Memory")) {
 		auto kernalRom = mC64->GetKernalData();
 		auto basicRom = mC64->GetBasicRomData();
@@ -178,7 +178,7 @@ void Debugger::ShowMemoryView() {
 	}
 }
 
-void Debugger::ShowMemoryRange(const char *label, const u8 *data, u16 startAddress, u16 size) {
+auto Debugger::ShowMemoryRange(const char *label, const u8 *data, u16 startAddress, u16 size) -> void {
 	auto cpu = mC64->GetCpu();
 	auto cState = cpu->GetCpuState();
 	if (ImGui::CollapsingHeader(label)) {
@@ -242,7 +242,7 @@ void Debugger::ShowMemoryRange(const char *label, const u8 *data, u16 startAddre
 	}
 }
 
-void Debugger::DecompileKernal() {
+auto Debugger::DecompileKernal() -> void {
 	log->info("Decompiling Kernal");
 	if (mKernalDecon.size() > 0)
 		return;

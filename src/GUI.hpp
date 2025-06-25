@@ -43,14 +43,14 @@ public:
 	GUI &operator=(GUI &&) = delete;
 	GUI &operator=(const GUI &) = delete;
 
-	i32 Init();
-	void Render();
-	void Destroy();
+	auto Init() -> i32;
+	auto Render() -> void;
+	auto Destroy() -> void;
 
-	void ShowMainMenuBar();
-	void ShowDemoStuff();
+	auto ShowMainMenuBar() -> void;
+	auto ShowDemoStuff() -> void;
 
-	Context *GetContext() { return &mContext; };
+	auto GetContext() -> Context *{ return &mContext; } ;
 
 private:
 	C64 *mC64;

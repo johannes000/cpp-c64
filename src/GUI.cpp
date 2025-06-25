@@ -15,7 +15,7 @@ constexpr ImVec4 CLEAR_COLOR = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 GUI::GUI(C64 *c64, Debugger *debug) : mC64(c64), mDebug(debug) {
 }
 
-i32 GUI::Init() {
+auto GUI::Init() -> i32 {
 	// Setup SDL
 	// [If using SDL_MAIN_USE_CALLBACKS: all code below until the main loop starts would likely be your SDL_AppInit() function]
 	if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMEPAD)) {
@@ -120,7 +120,7 @@ i32 GUI::Init() {
 	return 0;
 }
 
-void GUI::Render() {
+auto GUI::Render() -> void {
 	auto &io = ImGui::GetIO();
 
 	// Start the Dear ImGui frame
@@ -182,7 +182,7 @@ void GUI::Render() {
 	SDL_GL_SwapWindow(mContext.window);
 }
 
-void GUI::Destroy() {
+auto GUI::Destroy() -> void {
 	// Cleanup
 	// [If using SDL_MAIN_USE_CALLBACKS: all code below would likely be your SDL_AppQuit() function]
 	ImGui_ImplOpenGL3_Shutdown();
@@ -194,7 +194,7 @@ void GUI::Destroy() {
 	SDL_Quit();
 }
 
-void GUI::ShowMainMenuBar() {
+auto GUI::ShowMainMenuBar() -> void {
 	if (ImGui::BeginMenuBar()) {
 		if (ImGui::BeginMenu("Emulator")) {
 			ImGui::MenuItem("Show Demo Windows", NULL, &showDemoStuff);
@@ -205,7 +205,7 @@ void GUI::ShowMainMenuBar() {
 	ImGui::End();
 }
 
-void GUI::ShowDemoStuff() {
+auto GUI::ShowDemoStuff() -> void {
 	auto io = ImGui::GetIO();
 	// 1. Show the big demo window (Most of the sample code is in ImGui::ShowDemoWindow()! You can browse its code to learn more about Dear ImGui!).
 	if (showDemoWindow)

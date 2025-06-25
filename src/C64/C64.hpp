@@ -9,33 +9,33 @@ public:
 	C64();
 	~C64();
 
-	void RunOneInstruction();
-	void Reset();
+	auto RunOneInstruction() -> void;
+	auto Reset() -> void;
 
-	Component *Decode(u16 address, u16 &relativeAddress);
+	auto Decode(u16 address, u16 &relativeAddress) -> Component *;
 
-	u8 load8(u16 address);
-	u16 load16(u16 address);
-	void store8(u16 address, u8 value);
-	void store16(u16 address, u16 value);
+	auto load8(u16 address) -> u8;
+	auto load16(u16 address) -> u16;
+	auto store8(u16 address, u8 value) -> void;
+	auto store16(u16 address, u16 value) -> void;
 
-	CPU6502 *GetCpu() { return mCPU.get(); };
+	auto GetCpu() -> CPU6502 * { return mCPU.get(); };
 
-	u8 *GetBasicRomData() { return mBasic.Data(); }
-	u8 *GetCharSetData() { return mCharSet.Data(); }
-	u8 *GetKernalData() { return mKernal.Data(); }
-	u8 *GetRamData() { return mRam.Data(); }
+	auto GetBasicRomData() -> u8 * { return mBasic.Data(); }
+	auto GetCharSetData() -> u8 * { return mCharSet.Data(); }
+	auto GetKernalData() -> u8 * { return mKernal.Data(); }
+	auto GetRamData() -> u8 * { return mRam.Data(); }
 
-	Memory<BASIC_ROM_SIZE> *GetBasicPointer() {
+	auto GetBasicPointer() -> Memory<BASIC_ROM_SIZE> * {
 		return &mBasic;
 	}
-	Memory<CHARACTER_ROM_SIZE> *GetCharSetPointer() {
+	auto GetCharSetPointer() -> Memory<CHARACTER_ROM_SIZE> * {
 		return &mCharSet;
 	}
-	Memory<KERNAL_SIZE> *GetKernalPointer() {
+	auto GetKernalPointer() -> Memory<KERNAL_SIZE> * {
 		return &mKernal;
 	}
-	Memory<RAM_SIZE> *GetRamPointer() {
+	auto GetRamPointer() -> Memory<RAM_SIZE> * {
 		return &mRam;
 	}
 

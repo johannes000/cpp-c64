@@ -24,12 +24,12 @@ C64::C64() : mBasic("Basic"),
 C64::~C64() {
 }
 
-void C64::RunOneInstruction() {
+auto C64::RunOneInstruction() -> void {
 	mCPU->RunOneInstruction();
 	mCpuLogs.push_back(mCPU->GetCurrentInstructionLog());
 }
 
-void C64::Reset() {
+auto C64::Reset() -> void {
 	mKernal.loadFromFile(Kernals[2]);
 	mBasic.loadFromFile(CharSets[0]);
 	mCharSet.loadFromFile(BasicRoms[0]);
@@ -40,7 +40,7 @@ void C64::Reset() {
 	mCpuLogs.clear();
 }
 
-Component *C64::Decode(u16 address, u16 &relativeAddress) {
+auto C64::Decode(u16 address, u16 &relativeAddress) -> Component * {
 	if (AddressRange::BASIC_ROM.Contains(address, relativeAddress))
 		return &mBasic;
 	if (AddressRange::KERNAL.Contains(address, relativeAddress))
@@ -53,7 +53,7 @@ Component *C64::Decode(u16 address, u16 &relativeAddress) {
 	return nullptr;
 }
 
-u8 C64::load8(u16 address) {
+auto C64::load8(u16 address) -> u8 {
 	u16 relAddress;
 
 	auto component = Decode(address, relAddress);
@@ -62,7 +62,7 @@ u8 C64::load8(u16 address) {
 	return component->IOLoad8(relAddress);
 }
 
-u16 C64::load16(u16 address) {
+auto C64::load16(u16 address) -> u16 {
 	// if (address % 2 != 0)
 	// 	log->critical("Datenzugriff nicht richtig ausgerichtet. Funk: {} Addr: {:X}", __FUNCTION__, address);
 	u16 relAddress;
@@ -73,7 +73,7 @@ u16 C64::load16(u16 address) {
 	return component->IOLoad16(relAddress);
 }
 
-void C64::store8(u16 address, u8 value) {
+auto C64::store8(u16 address, u8 value) -> void {
 	u16 relAddress;
 
 	auto component = Decode(address, relAddress);
@@ -81,7 +81,7 @@ void C64::store8(u16 address, u8 value) {
 		return component->IOStore8(relAddress, value);
 }
 
-void C64::store16(u16 address, u16 value) {
+auto C64::store16(u16 address, u16 value) -> void {
 	// if (address % 2 != 0)
 	// 	log->critical("Datenzugriff nicht richtig ausgerichtet. Funk: {} Addr: {:X}", __FUNCTION__, address);
 	u16 relAddress;

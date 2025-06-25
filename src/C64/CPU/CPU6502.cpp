@@ -15,11 +15,11 @@ CPU6502::CPU6502(C64 *c64) : Component("CPU"),
 CPU6502::~CPU6502() {
 }
 
-[[nodiscard]] CPU6502::Instruction CPU6502::GetNextInstruction() {
+[[nodiscard]] auto CPU6502::GetNextInstruction() -> CPU6502::Instruction {
 	return GetInstructionAtAddr(PC);
 }
 
-void CPU6502::RunOneInstruction() {
+auto CPU6502::RunOneInstruction() -> void {
 	mIsJump = false;
 	mCurrentInstruction = GetNextInstruction();
 	mCurrentAddr = (this->*(mCurrentInstruction.AddrFunc))();
@@ -30,15 +30,15 @@ void CPU6502::RunOneInstruction() {
 	UpdateCpuStateSnapshot();
 }
 
-void CPU6502::LogCurrentInstruction() {
+auto CPU6502::LogCurrentInstruction() -> void {
 	log->info(GetCurrentInstructionLog());
 }
 
-[[nodiscard]] CPU6502::Instruction CPU6502::GetInstructionAtAddr(u16 addr) const {
+[[nodiscard]] auto CPU6502::GetInstructionAtAddr(u16 addr) const -> CPU6502::Instruction {
 	return OpCodes[mC64->load8(addr)];
 }
 
-std::string CPU6502::GetCurrentInstructionAddressString() const {
+auto CPU6502::GetCurrentInstructionAddressString() const -> std::string {
 	std::string addrStr;
 	if (mCurrentInstruction.AddrFunc == &CPU6502::Implied) {
 		addrStr = "(Impl)";
@@ -71,10 +71,10 @@ std::string CPU6502::GetCurrentInstructionAddressString() const {
 	return addrStr;
 }
 
-std::string CPU6502::GetAddressString(u16 /* addr */) const {
+auto CPU6502::GetAddressString(u16 /* addr */) const -> std::string {
 }
 
-std::string CPU6502::GetImmStringAtAddress(u16 addr) const {
+auto CPU6502::GetImmStringAtAddress(u16 addr) const -> std::string {
 	std::string immStr;
 	switch (GetInstruction(addr).length) {
 		case 0:
@@ -95,7 +95,7 @@ std::string CPU6502::GetImmStringAtAddress(u16 addr) const {
 	return immStr;
 }
 
-const std::string CPU6502::GetCurrentInstructionLog() const {
+auto CPU6502::GetCurrentInstructionLog() const -> const std::string {
 	auto addrStr = GetCurrentInstructionAddressString();
 	auto immStr = GetImmStringAtAddress(PC);
 	auto registerStr = std::format("A: {:02X} | X: {:02X} | Y: {:02X} | PS: {:08b} | SP: {:02X}",
@@ -105,21 +105,21 @@ const std::string CPU6502::GetCurrentInstructionLog() const {
 					   PC, immStr, mCurrentInstruction.Name, mC64->load8(PC), addrStr, registerStr);
 };
 
-u8 CPU6502::IOLoad8(u16 /* address */) const {
+auto CPU6502::IOLoad8(u16 /* address */) const -> u8 {
 	return 0;
 }
 
-u16 CPU6502::IOLoad16(u16 /* address */) const {
+auto CPU6502::IOLoad16(u16 /* address */) const -> u16 {
 	return 0;
 }
 
-void CPU6502::IOStore8(u16 /* address */, u8 /* value */) {
+auto CPU6502::IOStore8(u16 /* address */, u8 /* value */) -> void {
 }
 
-void CPU6502::IOStore16(u16 /* address */, u16 /* value */) {
+auto CPU6502::IOStore16(u16 /* address */, u16 /* value */) -> void {
 }
 
-void CPU6502::Reset() {
+auto CPU6502::Reset() -> void {
 	PC = mC64->load16(0xFFFC);
 	SP = 0xFD;
 	PS.data = 0;
@@ -128,7 +128,7 @@ void CPU6502::Reset() {
 	Y = 0;
 }
 
-void CPU6502::UpdateCpuStateSnapshot() {
+auto CPU6502::UpdateCpuStateSnapshot() -> void {
 	mCpuStateSnapshot = CPUState{
 		.A = A,
 		.X = X,
@@ -138,62 +138,62 @@ void CPU6502::UpdateCpuStateSnapshot() {
 		.PC = PC};
 }
 
-void CPU6502::PushToStack(u8 val) {
+auto CPU6502::PushToStack(u8 val) -> void {
 	mC64->store8(SP--, val);
 }
 
-void CPU6502::PushAddressToStack(u16 addr) {
+auto CPU6502::PushAddressToStack(u16 addr) -> void {
 	PushToStack(addr & 0xFF);
 	PushToStack((addr & 0xFF00) >> 8);
 }
 
-u16 CPU6502::PullAddressFromStack() {
+auto CPU6502::PullAddressFromStack() -> u16 {
 	u8 l = PullFromStack();
 	u8 h = PullFromStack();
 	return h | l << 8;
 }
 
-u8 CPU6502::PullFromStack() {
+auto CPU6502::PullFromStack() -> u8 {
 	return mC64->load8(++SP);
 }
 
-u8 CPU6502::GetValAtCurrentAddr() {
+auto CPU6502::GetValAtCurrentAddr() -> u8 {
 	return mC64->load8(mCurrentAddr);
 }
 
-void CPU6502::StoreValAtCurrentAddr(u8 v) {
+auto CPU6502::StoreValAtCurrentAddr(u8 v) -> void {
 	mC64->store8(mCurrentAddr, v);
 }
 
-void CPU6502::HandleZeroFlag(u8 val) {
+auto CPU6502::HandleZeroFlag(u8 val) -> void {
 	PS.Z = val == 0 ? 1 : 0;
 }
 
-void CPU6502::HandleZeroFlag(u16 val) {
+auto CPU6502::HandleZeroFlag(u16 val) -> void {
 	PS.Z = val == 0 ? 1 : 0;
 }
 
-void CPU6502::HandleNegativeFlag(u8 val) {
+auto CPU6502::HandleNegativeFlag(u8 val) -> void {
 	// TODO: Unittest
 	PS.N = CheckBit(val, 7) ? 1 : 0;
 }
 
-void CPU6502::HandleNegativeFlag(u16 val) {
+auto CPU6502::HandleNegativeFlag(u16 val) -> void {
 	// TODO: Unittest
 	PS.N = CheckBit(val, 15) ? 1 : 0;
 }
 
-void CPU6502::HandleNZFlags(u8 val) {
+auto CPU6502::HandleNZFlags(u8 val) -> void {
 	HandleNegativeFlag(val);
 	HandleZeroFlag(val);
 }
 
-void CPU6502::HandleNZFlags(u16 val) {
+auto CPU6502::HandleNZFlags(u16 val) -> void {
 	HandleNegativeFlag(val);
 	HandleZeroFlag(val);
 }
 
-void CPU6502::Branch(bool f) {
+auto CPU6502::Branch(bool f) -> void {
 	if (f) {
 		PC = mCurrentAddr;
 		mIsJump = true;

@@ -7,7 +7,7 @@
 
 typedef std::shared_ptr<spdlog::logger> LogPtr;
 
-inline LogPtr AddLogger(const std::string &name, spdlog::level::level_enum level = spdlog::level::info) {
+inline auto AddLogger(const std::string &name, spdlog::level::level_enum level = spdlog::level::info) -> LogPtr {
 	LogPtr logger = spdlog::get(name);
 	if (logger != nullptr)
 		return logger;

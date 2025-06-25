@@ -4,8 +4,7 @@
 #include "GUI.hpp"
 #include "Utility/Logger.hpp"
 
-// Main code
-int main(int, char **) {
+auto main(int, char **) -> i32 {
 	C64 c64;
 	Debugger debug(&c64);
 	GUI gui(&c64, &debug);

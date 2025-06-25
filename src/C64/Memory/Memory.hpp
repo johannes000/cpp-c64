@@ -9,22 +9,23 @@ public:
 		Reset();
 	};
 
-	u8 IOLoad8(u16 address) const override {
+	auto IOLoad8(u16 address) const -> u8 override {
 		return *((u8 *)(&mData[address]));
 	}
-	u16 IOLoad16(u16 address) const override {
+
+	auto IOLoad16(u16 address) const -> u16 override {
 		return *((u16 *)(&mData[address]));
 	}
 
-	void IOStore8(u16 address, u8 value) override {
+	auto IOStore8(u16 address, u8 value) -> void override {
 		mData[address] = value;
 	}
-	void IOStore16(u16 address, u16 value) override {
+	auto IOStore16(u16 address, u16 value) -> void override {
 		mData[address + 0] = (u8)value;
 		mData[address + 1] = (u8)(value >> 8);
 	}
 
-	bool loadFromFile(std::string filePath) {
+	auto loadFromFile(std::string filePath) -> bool {
 		Reset();
 		if (FILE *file = fopen(filePath.c_str(), "rb+")) {
 			fread(mData, sizeof(u8), size, file);
@@ -36,13 +37,13 @@ public:
 		return false;
 	}
 
-	void Reset() {
+	auto Reset() -> void {
 		memset(mData, 0, size_t(size));
 	}
 
-	u8 *Data() { return mData; }
+	auto Data() -> u8 * { return mData; }
 
-	Memory<size> *Get() {
+	auto Get() -> Memory<size> * {
 		return this;
 	}
 

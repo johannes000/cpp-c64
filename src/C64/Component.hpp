@@ -5,13 +5,13 @@ class Component {
 public:
 	Component(const std::string &name) : mName(name) {
 										 };
-	virtual u8 IOLoad8(u16 address) const;
-	virtual u16 IOLoad16(u16 address) const;
+	virtual auto IOLoad8(u16 address) const -> u8;
+	virtual auto IOLoad16(u16 address) const -> u16;
 
-	virtual void IOStore8(u16 address, u8 value);
-	virtual void IOStore16(u16 address, u16 value);
+	virtual auto IOStore8(u16 address, u8 value) -> void;
+	virtual auto IOStore16(u16 address, u16 value) -> void;
 
-	virtual void Reset() = 0;
+	virtual auto Reset() -> void = 0;
 
 private:
 	std::string mName;

@@ -23,17 +23,17 @@ class Debugger {
 public:
 	Debugger(C64 *c64);
 
-	void RenderDebugger();
-	void Update();
+	auto RenderDebugger() -> void;
+	auto Update() -> void;
 
 private:
-	void ShowC64CpuControls();
-	void ShowC64CpuStats();
-	void ShowDecompiler();
-	void ShowMemoryRange(const char *label, const u8 *data, u16 startAddress, u16 size);
-	void ShowMemoryView();
+	auto ShowC64CpuControls() -> void;
+	auto ShowC64CpuStats() -> void;
+	auto ShowDecompiler() -> void;
+	auto ShowMemoryRange(const char *label, const u8 *data, u16 startAddress, u16 size) -> void;
+	auto ShowMemoryView() -> void;
 
-	void DecompileKernal();
+	auto DecompileKernal() -> void;
 
 private:
 	C64 *mC64;

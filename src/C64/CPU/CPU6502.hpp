@@ -48,51 +48,52 @@ public:
 
 	bool mIsJump;
 
-	void RunOneInstruction();
-	void LogCurrentInstruction();
+public:
+	auto RunOneInstruction() -> void;
+	auto LogCurrentInstruction() -> void;
 
 	auto GetPC() const { return PC; }
 
-	[[nodiscard]] Instruction GetInstructionAtAddr(u16 addr) const;
-	[[nodiscard]] Instruction GetCurrentInstrution() const { return mCurrentInstruction; }
-	[[nodiscard]] Instruction GetInstruction(u8 opCode) const { return OpCodes[opCode]; };
-	std::string GetCurrentInstructionAddressString() const;
-	std::string GetAddressString(u16 addr) const;
-	std::string GetImmStringAtAddress(u16 addr) const;
-	const std::string GetCurrentInstructionLog() const;
+	[[nodiscard]] auto GetInstructionAtAddr(u16 addr) const -> Instruction;
+	[[nodiscard]] auto GetCurrentInstrution() const -> Instruction { return mCurrentInstruction; }
+	[[nodiscard]] auto GetInstruction(u8 opCode) const -> Instruction { return OpCodes[opCode]; };
+	auto GetCurrentInstructionAddressString() const -> std::string;
+	auto GetAddressString(u16 addr) const -> std::string;
+	auto GetImmStringAtAddress(u16 addr) const -> std::string;
+	auto GetCurrentInstructionLog() const -> const std::string;
 
-	u8 IOLoad8(u16 address) const override;
-	u16 IOLoad16(u16 address) const override;
+	auto IOLoad8(u16 address) const -> u8 override;
+	auto IOLoad16(u16 address) const -> u16 override;
 
-	void IOStore8(u16 address, u8 value) override;
-	void IOStore16(u16 address, u16 value) override;
+	auto IOStore8(u16 address, u8 value) -> void override;
+	auto IOStore16(u16 address, u16 value) -> void override;
 
-	void Reset();
+	auto Reset() -> void;
 
-	u16 GetCurrentAddress() const {
+	auto GetCurrentAddress() const -> u16 {
 		return mCurrentAddr;
 	}
 
-	CPUState GetCpuState() const {
+	auto GetCpuState() const -> CPUState {
 		return mCpuStateSnapshot;
 	}
 
 private:
-	void UpdateCpuStateSnapshot();
+	auto UpdateCpuStateSnapshot() -> void;
 
-	void PushToStack(u8 val);
-	[[nodiscard]] u8 PullFromStack();
-	void PushAddressToStack(u16 addr);
-	[[nodiscard]] u16 PullAddressFromStack();
-	[[nodiscard]] u8 GetValAtCurrentAddr();
-	void StoreValAtCurrentAddr(u8 v);
+	auto PushToStack(u8 val) -> void;
+	[[nodiscard]] auto PullFromStack() -> u8;
+	auto PushAddressToStack(u16 addr) -> void;
+	[[nodiscard]] auto PullAddressFromStack() -> u16;
+	[[nodiscard]] auto GetValAtCurrentAddr() -> u8;
+	auto StoreValAtCurrentAddr(u8 v) -> void;
 
-	void HandleZeroFlag(u8 val);
-	void HandleZeroFlag(u16 val);
-	void HandleNegativeFlag(u8 val);
-	void HandleNegativeFlag(u16 val);
-	void HandleNZFlags(u8 val);
-	void HandleNZFlags(u16 val);
+	auto HandleZeroFlag(u8 val) -> void;
+	auto HandleZeroFlag(u16 val) -> void;
+	auto HandleNegativeFlag(u8 val) -> void;
+	auto HandleNegativeFlag(u16 val) -> void;
+	auto HandleNZFlags(u8 val) -> void;
+	auto HandleNZFlags(u16 val) -> void;
 
 private:
 	C64 *mC64;
@@ -391,78 +392,78 @@ private:
 	};
 
 private:
-	u16 Immediate();
-	u16 ZeroPage();
-	u16 ZeroPageX();
-	u16 ZeroPageY();
-	u16 Absolute();
-	u16 AbsoluteX();
-	u16 AbsoluteY();
-	u16 Indirect();
-	u16 IndirectX();
-	u16 IndirectY();
-	u16 Implied();
-	u16 Accumulator();
-	u16 Relative();
+	auto Immediate() -> u16;
+	auto ZeroPage() -> u16;
+	auto ZeroPageX() -> u16;
+	auto ZeroPageY() -> u16;
+	auto Absolute() -> u16;
+	auto AbsoluteX() -> u16;
+	auto AbsoluteY() -> u16;
+	auto Indirect() -> u16;
+	auto IndirectX() -> u16;
+	auto IndirectY() -> u16;
+	auto Implied() -> u16;
+	auto Accumulator() -> u16;
+	auto Relative() -> u16;
 
 private:
-	void Branch(bool f);
-	void Compare(u8 comp);
-	void ILL(); // Illegal
-	void LDA(); // Load Accumulator
-	void LDX(); // Load X Register
-	void LDY(); // Load Y Register
-	void STA(); // Store Accumulator
-	void STX(); // Store X Register
-	void STY(); // Store Y Register
-	void TAX(); // Transfer accumulator to X
-	void TAY(); // Transfer accumulator to Y
-	void TXA(); // Transfer X to accumulator
-	void TYA(); // Transfer Y to accumulator
-	void TSX(); // Transfer stack pointer to X
-	void TXS(); // Transfer X to stack pointer
-	void PHA(); // Push accumulator on stack
-	void PHP(); // Push processor status on stack
-	void PLA(); // Pull accumulator from stack
-	void PLP(); // Pull processor status from stack
-	void AND(); // Logical AND
-	void EOR(); // Exclusive OR
-	void ORA(); // Logical Inclusive OR
-	void BIT(); // Bit Test
-	void ADC(); // Add with Carry
-	void SBC(); // Subtract with Carry
-	void CMP(); // Compare accumulator
-	void CPX(); // Compare X register
-	void CPY(); // Compare Y register
-	void INC(); // Increment a memory location
-	void INX(); // Increment the X register
-	void INY(); // Increment the Y register
-	void DEC(); // Decrement a memory location
-	void DEX(); // Decrement the X register
-	void DEY(); // Decrement the Y register
-	void ASL(); // Arithmetic Shift Left
-	void LSR(); // Logical Shift Right
-	void ROL(); // Rotate Left
-	void ROR(); // Rotate Right
-	void JMP(); // Jump to another location
-	void JSR(); // Jump to a subroutine
-	void RTS(); // Return from subroutine
-	void BCC(); // Branch if carry flag clear
-	void BCS(); // Branch if carry flag set
-	void BEQ(); // Branch if zero flag set
-	void BMI(); // Branch if negative flag set
-	void BNE(); // Branch if zero flag clear
-	void BPL(); // Branch if negative flag clear
-	void BVC(); // Branch if overflow flag clear
-	void BVS(); // Branch if overflow flag set
-	void CLC(); // Clear carry flag
-	void CLD(); // Clear decimal mode flag
-	void CLI(); // Clear interrupt disable flag
-	void CLV(); // Clear overflow flag
-	void SEC(); // Set carry flag
-	void SED(); // Set decimal mode flag
-	void SEI(); // Set interrupt disable flag
-	void BRK(); // Force an interrupt
-	void NOP(); // No Operation
-	void RTI(); // Return from Interrupt
+	auto Branch(bool f) -> void;
+	auto Compare(u8 comp) -> void;
+	auto ILL() -> void; // Illegal
+	auto LDA() -> void; // Load Accumulator
+	auto LDX() -> void; // Load X Register
+	auto LDY() -> void; // Load Y Register
+	auto STA() -> void; // Store Accumulator
+	auto STX() -> void; // Store X Register
+	auto STY() -> void; // Store Y Register
+	auto TAX() -> void; // Transfer accumulator to X
+	auto TAY() -> void; // Transfer accumulator to Y
+	auto TXA() -> void; // Transfer X to accumulator
+	auto TYA() -> void; // Transfer Y to accumulator
+	auto TSX() -> void; // Transfer stack pointer to X
+	auto TXS() -> void; // Transfer X to stack pointer
+	auto PHA() -> void; // Push accumulator on stack
+	auto PHP() -> void; // Push processor status on stack
+	auto PLA() -> void; // Pull accumulator from stack
+	auto PLP() -> void; // Pull processor status from stack
+	auto AND() -> void; // Logical AND
+	auto EOR() -> void; // Exclusive OR
+	auto ORA() -> void; // Logical Inclusive OR
+	auto BIT() -> void; // Bit Test
+	auto ADC() -> void; // Add with Carry
+	auto SBC() -> void; // Subtract with Carry
+	auto CMP() -> void; // Compare accumulator
+	auto CPX() -> void; // Compare X register
+	auto CPY() -> void; // Compare Y register
+	auto INC() -> void; // Increment a memory location
+	auto INX() -> void; // Increment the X register
+	auto INY() -> void; // Increment the Y register
+	auto DEC() -> void; // Decrement a memory location
+	auto DEX() -> void; // Decrement the X register
+	auto DEY() -> void; // Decrement the Y register
+	auto ASL() -> void; // Arithmetic Shift Left
+	auto LSR() -> void; // Logical Shift Right
+	auto ROL() -> void; // Rotate Left
+	auto ROR() -> void; // Rotate Right
+	auto JMP() -> void; // Jump to another location
+	auto JSR() -> void; // Jump to a subroutine
+	auto RTS() -> void; // Return from subroutine
+	auto BCC() -> void; // Branch if carry flag clear
+	auto BCS() -> void; // Branch if carry flag set
+	auto BEQ() -> void; // Branch if zero flag set
+	auto BMI() -> void; // Branch if negative flag set
+	auto BNE() -> void; // Branch if zero flag clear
+	auto BPL() -> void; // Branch if negative flag clear
+	auto BVC() -> void; // Branch if overflow flag clear
+	auto BVS() -> void; // Branch if overflow flag set
+	auto CLC() -> void; // Clear carry flag
+	auto CLD() -> void; // Clear decimal mode flag
+	auto CLI() -> void; // Clear interrupt disable flag
+	auto CLV() -> void; // Clear overflow flag
+	auto SEC() -> void; // Set carry flag
+	auto SED() -> void; // Set decimal mode flag
+	auto SEI() -> void; // Set interrupt disable flag
+	auto BRK() -> void; // Force an interrupt
+	auto NOP() -> void; // No Operation
+	auto RTI() -> void; // Return from Interrupt
 };
