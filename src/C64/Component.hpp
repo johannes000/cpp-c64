@@ -4,8 +4,7 @@
 class Component {
 public:
 	Component(const std::string &name) : mName(name) {
-		log = spdlog::get("C64");
-	};
+										 };
 	virtual u8 IOLoad8(u16 address) const;
 	virtual u16 IOLoad16(u16 address) const;
 
@@ -16,5 +15,5 @@ public:
 
 private:
 	std::string mName;
-	std::shared_ptr<spdlog::logger> log;
+	LogPtr log = AddLogger("C64");
 };

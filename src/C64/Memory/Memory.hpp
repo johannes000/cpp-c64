@@ -6,8 +6,6 @@ template <u32 size>
 class Memory : public Component {
 public:
 	Memory(const std::string &name) : Component(name) {
-		log = spdlog::get("MEM");
-
 		Reset();
 	};
 
@@ -50,5 +48,5 @@ public:
 
 private:
 	u8 *mData = new u8[size];
-	std::shared_ptr<spdlog::logger> log;
+	LogPtr log = AddLogger("MEM");
 };

@@ -50,5 +50,5 @@ private:
 	std::unique_ptr<CPU6502> mCPU;
 
 private:
-	std::shared_ptr<spdlog::logger> log;
+	LogPtr log = AddLogger("C64");
 };

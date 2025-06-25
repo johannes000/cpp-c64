@@ -57,6 +57,8 @@ public:
 	[[nodiscard]] Instruction GetCurrentInstrution() const { return mCurrentInstruction; }
 	[[nodiscard]] Instruction GetInstruction(u8 opCode) const { return OpCodes[opCode]; };
 	std::string GetCurrentInstructionAddressString() const;
+	std::string GetAddressString(u16 addr) const;
+	std::string GetImmStringAtAddress(u16 addr) const;
 	const std::string GetCurrentInstructionLog() const;
 
 	u8 IOLoad8(u16 address) const override;
@@ -111,7 +113,7 @@ private:
 	// Program Counter
 	u16 PC;
 
-	std::shared_ptr<spdlog::logger> log;
+	LogPtr log = AddLogger("CPU");
 
 private:
 	const std::vector<Instruction> OpCodes{
@@ -405,6 +407,7 @@ private:
 
 private:
 	void Branch(bool f);
+	void Compare(u8 comp);
 	void ILL(); // Illegal
 	void LDA(); // Load Accumulator
 	void LDX(); // Load X Register

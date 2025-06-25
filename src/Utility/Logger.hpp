@@ -5,7 +5,12 @@
 #include <spdlog/sinks/basic_file_sink.h>
 #include <memory>
 
-inline std::shared_ptr<spdlog::logger> AddLogger(const std::string &name, spdlog::level::level_enum level = spdlog::level::info) {
+typedef std::shared_ptr<spdlog::logger> LogPtr;
+
+inline LogPtr AddLogger(const std::string &name, spdlog::level::level_enum level = spdlog::level::info) {
+	LogPtr logger = spdlog::get(name);
+	if (logger != nullptr)
+		return logger;
 
 	auto now = std::chrono::system_clock::now();
 	auto now_time_t = std::chrono::system_clock::to_time_t(now);
@@ -20,12 +25,11 @@ inline std::shared_ptr<spdlog::logger> AddLogger(const std::string &name, spdlog
 	auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
 	auto file_sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(filename);
 	std::vector<spdlog::sink_ptr> sinks = {console_sink, file_sink};
-	auto logger = std::make_shared<spdlog::logger>(name, sinks.begin(), sinks.end());
+	logger = std::make_shared<spdlog::logger>(name, sinks.begin(), sinks.end());
 
 	logger->set_level(level);
 
 	spdlog::register_logger(logger);
 	logger->info("{} Logger Added", name);
-
 	return logger;
 }

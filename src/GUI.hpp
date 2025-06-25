@@ -55,7 +55,8 @@ public:
 private:
 	C64 *mC64;
 	Debugger *mDebug;
-
-	std::shared_ptr<spdlog::logger> log;
+	
 	Context mContext;
+
+	LogPtr log = AddLogger("GUI");
 };

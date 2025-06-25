@@ -17,8 +17,7 @@ C64::C64() : mBasic("Basic"),
 			 mCharSet("Char"),
 			 mKernal("Kernal"),
 			 mRam("Ram"),
-			 mCPU(std::make_unique<CPU6502>(this)),
-			 log(spdlog::get("C64")) {
+			 mCPU(std::make_unique<CPU6502>(this)) {
 	Reset();
 }
 

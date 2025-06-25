@@ -12,9 +12,9 @@ set(CMAKE_SUPPRESS_DEVELOPER_WARNINGS TRUE)
 include(cmake/CPM.cmake)
 include(cmake/warnings.cmake)
 
-set(BUILD_PATH ${PROJECT_SOURCE_DIR}/build/bin/Debug)
-set(EXECUTABLE_OUTPUT_PATH ${BUILD_PATH})
-set(LIBRARY_OUTPUT_PATH ${BUILD_PATH})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/$<CONFIG>")
 
 CPMAddPackage(
   NAME SDL
@@ -40,6 +40,14 @@ CPMAddPackage(
   VERSION 1.15.1
   OPTIONS "SPDLOG_BUILD_SHARED OFF" "SPDLOG_BUILD_STATIC ON"
 )
+
+CPMAddPackage(
+  NAME googletest
+  GITHUB_REPOSITORY google/googletest
+  VERSION 1.14.0
+  OPTIONS "INSTALL_GTEST OFF"
+)
+
 
 include(FetchContent)
 
@@ -78,6 +86,12 @@ add_executable(${PROJECT_NAME}
   ${UTIL_SOURCES}
 )
 
+
+include(CTest)
+enable_testing()
+
+include(GoogleTest)
+
 # link dependencies
 target_link_libraries(
   ${PROJECT_NAME} 
@@ -87,7 +101,20 @@ target_link_libraries(
   SDL3::SDL3
   spdlog::spdlog
   stdc++
+  gtest gtest_main gmock
 )
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE SPDLOG_COMPILED_LIB)
 file(COPY "${CMAKE_SOURCE_DIR}/roms/" DESTINATION "${EXECUTABLE_OUTPUT_PATH}/roms")
+
+
+if(SDL_ADDED)
+  if(WIN32 AND SDL_SHARED)
+  add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different
+      "${SDL_BINARY_DIR}/SDL3.dll"
+      "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+    COMMENT "Copying SDL3.dll to output directory"
+  )
+  endif()
+endif()

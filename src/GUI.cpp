@@ -13,7 +13,6 @@ constexpr ImVec4 CLEAR_COLOR = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 } // namespace
 
 GUI::GUI(C64 *c64, Debugger *debug) : mC64(c64), mDebug(debug) {
-	log = spdlog::get("GUI");
 }
 
 i32 GUI::Init() {
@@ -60,7 +59,7 @@ i32 GUI::Init() {
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	Uint32 window_flags = SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN;
-	mContext.window = SDL_CreateWindow("Dear ImGui SDL3+OpenGL3 example", 1280, 720, window_flags);
+	mContext.window = SDL_CreateWindow("C64", 1280, 720, window_flags);
 	if (mContext.window == nullptr) {
 		printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
 		return -1;

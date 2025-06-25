@@ -181,31 +181,30 @@ void CPU6502::SBC() {
 	HandleNZFlags(A);
 }
 
+void CPU6502::Compare(u8 comp) {
+	u8 val = GetValAtCurrentAddr();
+	u8 res = comp - val;
+	PS.C = comp >= val;
+	PS.Z = comp == val;
+	HandleNegativeFlag(res);
+}
+
 void CPU6502::CMP() {
 	// Z,C,N = A-M
 	// This instruction compares the contents of the accumulator with another memory held value and sets the zero and carry flags as appropriate.
 	// Carry Flag 	Set if A >= M
 	// TODO: + add 1 cycle if page boundary crossed
-	u8 val = GetValAtCurrentAddr();
-	u8 temp = A - val;
-	PS.C = A >= val;
-	HandleNZFlags(temp);
+	Compare(A);
 }
 
 void CPU6502::CPX() {
 	// Z,C,N = X-M
 	// This instruction compares the contents of the X register with another memory held value and sets the zero and carry flags as appropriate.
-	u8 val = GetValAtCurrentAddr();
-	u8 temp = X - val;
-	PS.C = X >= val;
-	HandleNZFlags(temp);
+	Compare(X);
 }
 
 void CPU6502::CPY() {
-	u8 val = GetValAtCurrentAddr();
-	u8 temp = Y - val;
-	PS.C = Y >= val;
-	HandleNZFlags(temp);
+	Compare(Y);
 }
 
 void CPU6502::INC() {
@@ -361,18 +360,18 @@ void CPU6502::BEQ() {
 	Branch(PS.Z);
 }
 
+void CPU6502::BNE() {
+	// Branch if Not Equal
+	// If the zero flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
+	// TODO: Cycles +1 if branch succeeds +2 if to a new page
+	Branch(PS.Z == 0);
+}
+
 void CPU6502::BMI() {
 	// Branch if Minus
 	// If the negative flag is set then add the relative displacement to the program counter to cause a branch to a new location.
 	// TODO: Cycles +1 if branch succeeds +2 if to a new page
 	Branch(PS.N);
-}
-
-void CPU6502::BNE() {
-	// Branch if Not Equal
-	// If the zero flag is clear then add the relative displacement to the program counter to cause a branch to a new location.
-	// TODO: Cycles +1 if branch succeeds +2 if to a new page
-	Branch(!PS.Z);
 }
 
 void CPU6502::BPL() {

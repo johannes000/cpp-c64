@@ -6,12 +6,6 @@
 
 // Main code
 int main(int, char **) {
-	auto CPULogger = AddLogger("CPU");
-	auto GUILogger = AddLogger("GUI");
-	auto C64Logger = AddLogger("C64");
-	auto MEMLogger = AddLogger("MEM");
-	auto DEBLogger = AddLogger("DEB");
-
 	C64 c64;
 	Debugger debug(&c64);
 	GUI gui(&c64, &debug);

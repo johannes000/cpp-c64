@@ -38,5 +38,5 @@ private:
 private:
 	C64 *mC64;
 	std::vector<DebuggerDeconInst> mKernalDecon;
-	std::shared_ptr<spdlog::logger> log;
+	LogPtr log = AddLogger("DEB");
 };

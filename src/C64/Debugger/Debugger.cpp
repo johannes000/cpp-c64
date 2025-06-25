@@ -15,7 +15,6 @@ constexpr ImVec4 DARK_GRAY = ImVec4(0.1f, 0.1f, 0.1f, 1.0f);
 }; // namespace
 
 Debugger::Debugger(C64 *c64) : mC64(c64) {
-	log = spdlog::get("DEB");
 }
 
 void Debugger::RenderDebugger() {
@@ -140,23 +139,7 @@ void Debugger::ShowDecompiler() {
 					ImGui::Text("%04X", inst.addr);
 
 					ImGui::TableNextColumn();
-					ImGui::Text("%02X", inst.opCode);
-
-					ImGui::TableNextColumn();
-					switch (inst.length) {
-						case 1:
-							ImGui::Text(" ");
-							break;
-						case 2:
-							ImGui::Text("%02X", inst.parameter);
-							break;
-						case 3:
-							ImGui::Text("%04X", inst.parameter);
-							break;
-						default:
-							ImGui::Text(" ");
-							break;
-					}
+					ImGui::Text("%s", cpu->GetImmStringAtAddress(inst.addr - 1).c_str());
 
 					ImGui::TableNextColumn();
 					ImGui::Text("%i", inst.cycles);
