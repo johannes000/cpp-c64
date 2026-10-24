@@ -52,6 +52,14 @@ CPMAddPackage(
   EXCLUDE_FROM_ALL YES
 )
 
+# Klaus Dormanns 6502 Functional Test (GPL-3.0), nur als Testeingabe
+CPMAddPackage(
+  NAME dormann_tests
+  GITHUB_REPOSITORY Klaus2m5/6502_65C02_functional_tests
+  GIT_TAG 7954e2dbb49c469ea286070bf46cdd71aeb29e4b
+  DOWNLOAD_ONLY YES
+)
+
 add_library(imgui STATIC
   ${imgui_SOURCE_DIR}/imgui.cpp
   ${imgui_SOURCE_DIR}/imgui_demo.cpp # optionally comment this out
@@ -76,7 +84,6 @@ file(GLOB_RECURSE UTIL_SOURCES
 )
 
 add_subdirectory(src/C64)
-# add_subdirectory(test)
 
 # add executable
 add_executable(${PROJECT_NAME}
@@ -89,6 +96,14 @@ include(CTest)
 enable_testing()
 
 include(GoogleTest)
+
+add_executable(CPU6502_test tests/CPU6502_test.cpp)
+target_link_libraries(CPU6502_test PRIVATE C64 GTest::gtest_main)
+target_compile_definitions(CPU6502_test PRIVATE
+  SPDLOG_COMPILED_LIB
+  DORMANN_FUNCTIONAL_TEST_BIN="${dormann_tests_SOURCE_DIR}/bin_files/6502_functional_test.bin"
+)
+gtest_discover_tests(CPU6502_test DISCOVERY_TIMEOUT 30 PROPERTIES TIMEOUT 300)
 
 # link dependencies
 target_link_libraries(

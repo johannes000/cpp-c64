@@ -1,9 +1,8 @@
 #pragma once
-#include "C64\Component.hpp"
-#include "C64\Memory\Memory.hpp"
-#include "Utility\Includes.hpp"
+#include "C64/Bus.hpp"
+#include "C64/Component.hpp"
+#include "Utility/Includes.hpp"
 
-class C64;
 union ProcessorStatus {
 	u8 data;
 	struct {
@@ -39,7 +38,7 @@ public:
 	};
 
 public:
-	CPU6502(C64 *c64);
+	CPU6502(Bus *bus);
 	virtual ~CPU6502();
 
 	Instruction GetNextInstruction();
@@ -53,6 +52,7 @@ public:
 	auto LogCurrentInstruction() -> void;
 
 	auto GetPC() const { return PC; }
+	auto SetPC(u16 pc) -> void { PC = pc; }
 
 	[[nodiscard]] auto GetInstructionAtAddr(u16 addr) const -> Instruction;
 	[[nodiscard]] auto GetCurrentInstrution() const -> Instruction { return mCurrentInstruction; }
@@ -87,6 +87,8 @@ private:
 	[[nodiscard]] auto PullAddressFromStack() -> u16;
 	[[nodiscard]] auto GetValAtCurrentAddr() -> u8;
 	auto StoreValAtCurrentAddr(u8 v) -> void;
+	[[nodiscard]] auto Load16(u16 addr) const -> u16;
+	[[nodiscard]] auto Load16ZeroPage(u8 addr) const -> u16;
 
 	auto HandleZeroFlag(u8 val) -> void;
 	auto HandleZeroFlag(u16 val) -> void;
@@ -96,7 +98,7 @@ private:
 	auto HandleNZFlags(u16 val) -> void;
 
 private:
-	C64 *mC64;
+	Bus *mBus;
 
 	Instruction mCurrentInstruction;
 	CPUState mCpuStateSnapshot{};
@@ -409,6 +411,7 @@ private:
 private:
 	auto Branch(bool f) -> void;
 	auto Compare(u8 comp) -> void;
+	auto AddBinary(u8 val) -> void;
 	auto ILL() -> void; // Illegal
 	auto LDA() -> void; // Load Accumulator
 	auto LDX() -> void; // Load X Register

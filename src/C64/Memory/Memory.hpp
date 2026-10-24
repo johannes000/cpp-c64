@@ -1,6 +1,8 @@
 #pragma once
-#include "C64\Component.hpp"
-#include "Utility\Includes.hpp"
+#include "C64/Component.hpp"
+#include "Utility/Includes.hpp"
+#include <cstdio>
+#include <cstring>
 
 template <u32 size>
 class Memory : public Component {
@@ -14,7 +16,7 @@ public:
 	}
 
 	auto IOLoad16(u16 address) const -> u16 override {
-		return *((u16 *)(&mData[address]));
+		return mData[address] | mData[(address + 1) % size] << 8;
 	}
 
 	auto IOStore8(u16 address, u8 value) -> void override {

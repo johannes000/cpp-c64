@@ -91,3 +91,4 @@ build-*/
 .cpm/
 Radmap.md
 .aider*
+logs/

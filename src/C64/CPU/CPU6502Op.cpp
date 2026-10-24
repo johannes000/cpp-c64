@@ -1,4 +1,3 @@
-#include "C64\C64.hpp"
 #include "CPU6502.hpp"
 
 auto CPU6502::ILL() -> void {
@@ -29,19 +28,19 @@ auto CPU6502::LDY() -> void {
 auto CPU6502::STA() -> void {
 	// Store Accumulator in Memory
 	// A -> M
-	A = GetValAtCurrentAddr();
+	StoreValAtCurrentAddr(A);
 }
 
 auto CPU6502::STX() -> void {
 	// Store Index X in Memory
 	// X->M
-	X = GetValAtCurrentAddr();
+	StoreValAtCurrentAddr(X);
 }
 
 auto CPU6502::STY() -> void {
-	// Sore Index Y in Memory
+	// Store Index Y in Memory
 	// Y->M
-	Y = GetValAtCurrentAddr();
+	StoreValAtCurrentAddr(Y);
 }
 
 auto CPU6502::TAX() -> void {
@@ -73,8 +72,8 @@ auto CPU6502::TYA() -> void {
 }
 
 auto CPU6502::TSX() -> void {
-	// Transfer Index X to Stack Register
-	// X -> SP
+	// Transfer Stack Pointer to Index X
+	// SP -> X
 	X = SP;
 	HandleNZFlags(X);
 }
@@ -96,8 +95,7 @@ auto CPU6502::PHP() -> void {
 	// The status register will be pushed with the break
 	// flag and bit 5 set to 1.
 	// push SR
-	PS.B = 1;
-	PushToStack(PS.data);
+	PushToStack(PS.data | 0x30);
 }
 
 auto CPU6502::PLA() -> void {
@@ -113,9 +111,7 @@ auto CPU6502::PLP() -> void {
 	// The status register will be pulled with the break
 	// flag and bit 5 ignored.
 	// pull SR
-	auto B = PS.B;
-	PS.data = PullFromStack();
-	PS.B = B;
+	PS.data = (PullFromStack() & 0xCF) | 0x20;
 }
 
 auto CPU6502::AND() -> void {
@@ -155,13 +151,36 @@ auto CPU6502::BIT() -> void {
 auto CPU6502::ADC() -> void {
 	// Add Memory to Accumulator with Carry
 	// A + M + C -> A, C
-	// TODO: BCD
 	u8 val = GetValAtCurrentAddr();
-	u16 temp = A + val + PS.C;
-	if (temp > 0xFF)
-		PS.C = 1;
-	PS.V = (i16)temp < -128 || (i16)temp > 128;
-	A = (u8)(temp & 0xFF);
+	if (!PS.D) {
+		AddBinary(val);
+		return;
+	}
+
+	// BCD wie beim NMOS-6502: Z kommt aus der binären Addition,
+	// N und V aus dem Zwischenergebnis vor der Korrektur der oberen Ziffer
+	u8 bin = A + val + PS.C;
+	i32 lo = (A & 0x0F) + (val & 0x0F) + PS.C;
+	if (lo >= 0x0A)
+		lo = ((lo + 0x06) & 0x0F) + 0x10;
+	i32 sum = (A & 0xF0) + (val & 0xF0) + lo;
+	i32 signedSum = (i8)(A & 0xF0) + (i8)(val & 0xF0) + lo;
+	PS.N = CheckBit(sum, 7);
+	PS.V = signedSum < -128 || signedSum > 127;
+	if (sum >= 0xA0)
+		sum += 0x60;
+	PS.C = sum >= 0x100;
+	PS.Z = bin == 0;
+	A = (u8)sum;
+}
+
+auto CPU6502::AddBinary(u8 val) -> void {
+	u16 sum = A + val + PS.C;
+	u8 res = (u8)sum;
+	PS.C = sum > 0xFF;
+	// Überlauf, wenn beide Operanden das gleiche Vorzeichen haben und das Ergebnis ein anderes
+	PS.V = ((A ^ res) & (val ^ res) & 0x80) != 0;
+	A = res;
 	HandleNZFlags(A);
 }
 
@@ -171,14 +190,23 @@ auto CPU6502::SBC() -> void {
 	// This instruction subtracts the contents of a memory location to the accumulator
 	// together with the not of the carry bit. If overflow occurs the carry bit is clear,
 	// this enables multiple byte subtraction to be performed.
-	// TODO: BCD
-	u8 val = ~GetValAtCurrentAddr();
-	u16 temp = A + val + PS.C;
-	if (temp > 0xFF)
-		PS.C = 1;
-	PS.V = (i16)temp < -128 || (i16)temp > 128;
-	A = (u8)(temp & 0xFF);
-	HandleNZFlags(A);
+	u8 val = GetValAtCurrentAddr();
+	if (!PS.D) {
+		AddBinary(~val);
+		return;
+	}
+
+	// BCD wie beim NMOS-6502: alle Flags kommen aus der binären Subtraktion
+	u8 a = A;
+	u8 borrow = 1 - PS.C;
+	AddBinary(~val);
+	i32 lo = (a & 0x0F) - (val & 0x0F) - borrow;
+	if (lo < 0)
+		lo = ((lo - 0x06) & 0x0F) - 0x10;
+	i32 res = (a & 0xF0) - (val & 0xF0) + lo;
+	if (res < 0)
+		res -= 0x60;
+	A = (u8)res;
 }
 
 auto CPU6502::Compare(u8 comp) -> void {
@@ -260,7 +288,7 @@ auto CPU6502::ASL() -> void {
 	u16 val = isA ? A : GetValAtCurrentAddr();
 	val <<= 1;
 	PS.C = CheckBit(val, 8);
-	HandleNZFlags(val);
+	HandleNZFlags((u8)val);
 	if (isA)
 		A = val;
 	else
@@ -335,7 +363,6 @@ auto CPU6502::RTS() -> void {
 	// Return from Subroutine
 	// The RTS instruction is used at the end of a subroutine to return to the calling routine.
 	// It pulls the program counter (minus one) from the stack.
-	// TODO: Minus One?
 	PC = PullAddressFromStack() + 1;
 	mCurrentInstructionIsJump = true;
 }
@@ -442,11 +469,12 @@ auto CPU6502::BRK() -> void {
 	// The BRK instruction forces the generation of an interrupt request.
 	// The program counter and processor status are pushed on the stack then the IRQ interrupt vector at $FFFE/F
 	// is loaded into the PC and the break flag in the status set to one.
-	PushAddressToStack(PC);
-	PS.B = 1;
-	PushToStack(PS.data);
-	PS.B = 0;
-	PC = mC64->load16(0xFFFE);
+	// Die Rücksprungadresse ist PC + 2, das Byte nach BRK wird übersprungen
+	PushAddressToStack(PC + 2);
+	PushToStack(PS.data | 0x30);
+	PS.I = 1;
+	PC = Load16(0xFFFE);
+	mCurrentInstructionIsJump = true;
 }
 
 auto CPU6502::NOP() -> void {
@@ -455,8 +483,10 @@ auto CPU6502::NOP() -> void {
 auto CPU6502::RTI() -> void {
 	// Return from Interrupt
 	// The RTI instruction is used at the end of an interrupt processing routine. It pulls the processor flags from the stack followed by the program counter.
-	PS.data = PullFromStack();
+	// B und Bit 5 werden wie bei PLP ignoriert
+	PS.data = (PullFromStack() & 0xCF) | 0x20;
 	PC = PullAddressFromStack();
+	mCurrentInstructionIsJump = true;
 }
 
 auto CPU6502::Immediate() -> u16 {
@@ -464,19 +494,22 @@ auto CPU6502::Immediate() -> u16 {
 }
 
 auto CPU6502::ZeroPage() -> u16 {
-	return Immediate() & 0x00FF;
+	mCurrentAddrUnmod = mBus->load8(PC + 1);
+	return mCurrentAddrUnmod;
 }
 
 auto CPU6502::ZeroPageX() -> u16 {
-	return ((u8)(Immediate() + X));
+	mCurrentAddrUnmod = mBus->load8(PC + 1);
+	return (u8)(mCurrentAddrUnmod + X);
 }
 
 auto CPU6502::ZeroPageY() -> u16 {
-	return ((u8)(Immediate() + Y));
+	mCurrentAddrUnmod = mBus->load8(PC + 1);
+	return (u8)(mCurrentAddrUnmod + Y);
 }
 
 auto CPU6502::Absolute() -> u16 {
-	return mC64->load16(PC + 1);
+	return Load16(PC + 1);
 }
 
 auto CPU6502::AbsoluteX() -> u16 {
@@ -498,17 +531,23 @@ auto CPU6502::AbsoluteY() -> u16 {
 }
 
 auto CPU6502::Indirect() -> u16 {
-	return mC64->load16(PC + 1);
+	// Nur JMP ($xxxx). NMOS-Fehler: liegt der Zeiger auf $xxFF,
+	// wird das High-Byte von $xx00 gelesen statt von der nächsten Page
+	mCurrentAddrUnmod = Load16(PC + 1);
+	u16 hiAddr = (mCurrentAddrUnmod & 0xFF00) | (u8)(mCurrentAddrUnmod + 1);
+	return mBus->load8(mCurrentAddrUnmod) | mBus->load8(hiAddr) << 8;
 }
 
 auto CPU6502::IndirectX() -> u16 {
-	mCurrentAddrUnmod = mC64->load16(PC + 1);
-	return mCurrentAddrUnmod + X;
+	// ($zz,X): Zeiger in der Zero Page bei zz + X
+	mCurrentAddrUnmod = mBus->load8(PC + 1);
+	return Load16ZeroPage((u8)(mCurrentAddrUnmod + X));
 }
 
 auto CPU6502::IndirectY() -> u16 {
-	mCurrentAddrUnmod = mC64->load16(PC + 1);
-	return mCurrentAddrUnmod + Y;
+	// ($zz),Y: Zeiger in der Zero Page bei zz, danach + Y
+	mCurrentAddrUnmod = mBus->load8(PC + 1);
+	return Load16ZeroPage((u8)mCurrentAddrUnmod) + Y;
 }
 
 auto CPU6502::Implied() -> u16 {
@@ -516,12 +555,12 @@ auto CPU6502::Implied() -> u16 {
 }
 
 auto CPU6502::Accumulator() -> u16 {
-	log->warn("Accumulator Addressing. Sollte normalerweise nicht aufgerufen werden können");
+	// ASL/LSR/ROL/ROR prüfen selbst auf Accumulator und arbeiten dann auf A
 	return 0;
 }
 
 auto CPU6502::Relative() -> u16 {
-	mCurrentInstructionIsJump = true;
-	mCurrentAddrUnmod = mC64->load8(PC + 1);
-	return PC + (i8)mCurrentAddrUnmod;
+	// Der Offset bezieht sich auf die Adresse nach dem Branch-Befehl
+	mCurrentAddrUnmod = mBus->load8(PC + 1);
+	return PC + 2 + (i8)mCurrentAddrUnmod;
 }

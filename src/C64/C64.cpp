@@ -31,8 +31,8 @@ auto C64::RunOneInstruction() -> void {
 
 auto C64::Reset() -> void {
 	mKernal.loadFromFile(Kernals[2]);
-	mBasic.loadFromFile(CharSets[0]);
-	mCharSet.loadFromFile(BasicRoms[0]);
+	mBasic.loadFromFile(BasicRoms[0]);
+	mCharSet.loadFromFile(CharSets[0]);
 
 	mRam.Reset();
 	mCPU->Reset();
@@ -65,12 +65,8 @@ auto C64::load8(u16 address) -> u8 {
 auto C64::load16(u16 address) -> u16 {
 	// if (address % 2 != 0)
 	// 	log->critical("Datenzugriff nicht richtig ausgerichtet. Funk: {} Addr: {:X}", __FUNCTION__, address);
-	u16 relAddress;
-
-	auto component = Decode(address, relAddress);
-	if (component == nullptr)
-		return 0;
-	return component->IOLoad16(relAddress);
+	// Über zwei Einzelzugriffe, damit auch Zugriffe über eine Bereichsgrenze stimmen
+	return load8(address) | load8(address + 1) << 8;
 }
 
 auto C64::store8(u16 address, u8 value) -> void {

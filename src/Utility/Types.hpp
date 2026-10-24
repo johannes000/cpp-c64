@@ -16,8 +16,6 @@ typedef int64_t i64;
 typedef float f32;
 typedef double f64;
 
-#define global static
-
 constexpr u32 kib(u32 x) { return 1024 * x; }
 constexpr u32 mib(u32 x) { return 1024 * kib(x); }
 constexpr u32 gib(u32 x) { return 1024 * mib(x); }
@@ -33,7 +31,7 @@ constexpr u16 RAM_SIZE = kib(39);
 
 namespace AddressRange {
 struct AddressRange {
-	constexpr AddressRange(u16 start, u16 size) : mStart(start), mEnd(static_cast<u16>(std::min<u32>(start + size, 0xFFFF))), mSize(size) {};
+	constexpr AddressRange(u16 start, u16 size) : mStart(start), mEnd(start + size), mSize(size) {};
 	bool Contains(u16 addr, u16 &relativeAddr) const {
 		if (addr >= mStart && addr < mEnd) {
 			relativeAddr = addr - mStart;
@@ -42,7 +40,7 @@ struct AddressRange {
 		return false;
 	}
 	u16 mStart;
-	u16 mEnd;
+	u32 mEnd; // exklusiv, kann 0x10000 sein
 	u16 mSize;
 };
 

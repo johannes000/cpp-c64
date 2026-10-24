@@ -1,10 +1,12 @@
 #pragma once
 #include "Utility/Includes.hpp"
+#include "Bus.hpp"
 #include "CPU/CPU6502.hpp"
+#include "Memory/Memory.hpp"
 
 class Component;
 
-class C64 {
+class C64 : public Bus {
 public:
 	C64();
 	~C64();
@@ -14,9 +16,9 @@ public:
 
 	auto Decode(u16 address, u16 &relativeAddress) -> Component *;
 
-	auto load8(u16 address) -> u8;
+	auto load8(u16 address) -> u8 override;
 	auto load16(u16 address) -> u16;
-	auto store8(u16 address, u8 value) -> void;
+	auto store8(u16 address, u8 value) -> void override;
 	auto store16(u16 address, u16 value) -> void;
 
 	auto GetCpu() -> CPU6502 * { return mCPU.get(); };

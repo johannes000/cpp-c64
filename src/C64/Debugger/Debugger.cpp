@@ -1,6 +1,6 @@
 #include "Debugger.hpp"
-#include "C64\C64.hpp"
-#include "C64\CPU\CPU6502.hpp"
+#include "C64/C64.hpp"
+#include "C64/CPU/CPU6502.hpp"
 
 namespace {
 constexpr ImVec4 BG_COLOR = {0.8f, 0.8f, 0.8f, 1.0f};
@@ -139,7 +139,7 @@ auto Debugger::ShowDecompiler() -> void {
 					ImGui::Text("%04X", inst.addr);
 
 					ImGui::TableNextColumn();
-					ImGui::Text("%s", cpu->GetImmStringAtAddress(inst.addr - 1).c_str());
+					ImGui::Text("%s", cpu->GetImmStringAtAddress(inst.addr).c_str());
 
 					ImGui::TableNextColumn();
 					ImGui::Text("%i", inst.cycles);
