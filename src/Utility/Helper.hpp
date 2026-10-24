@@ -19,7 +19,8 @@ constexpr auto ClearBit(T &num, i32 bit) -> void {
 
 template <typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>
 constexpr auto ClearBitIf(T &num, i32 bit, bool check) -> void {
-	num &= ~(1 << bit);
+	if (check)
+		num &= ~(1 << bit);
 }
 
 template <typename T, typename = typename std::enable_if<std::is_integral<T>::value>::type>

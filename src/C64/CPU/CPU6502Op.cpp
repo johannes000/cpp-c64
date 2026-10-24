@@ -1,5 +1,5 @@
-#include "CPU6502.hpp"
 #include "C64\C64.hpp"
+#include "CPU6502.hpp"
 
 auto CPU6502::ILL() -> void {
 	log->warn("Illegale Instruction");
@@ -320,7 +320,7 @@ auto CPU6502::JMP() -> void {
 	// Jump
 	// Sets the program counter to the address specified by the operand.
 	PC = mCurrentAddr;
-	mIsJump = true;
+	mCurrentInstructionIsJump = true;
 }
 
 auto CPU6502::JSR() -> void {
@@ -328,7 +328,7 @@ auto CPU6502::JSR() -> void {
 	// on to the stack and then sets the program counter to the target memory address.
 	PushAddressToStack(PC + mCurrentInstruction.length - 1);
 	PC = mCurrentAddr;
-	mIsJump = true;
+	mCurrentInstructionIsJump = true;
 }
 
 auto CPU6502::RTS() -> void {
@@ -337,7 +337,7 @@ auto CPU6502::RTS() -> void {
 	// It pulls the program counter (minus one) from the stack.
 	// TODO: Minus One?
 	PC = PullAddressFromStack() + 1;
-	mIsJump = true;
+	mCurrentInstructionIsJump = true;
 }
 
 auto CPU6502::BCC() -> void {
@@ -521,7 +521,7 @@ auto CPU6502::Accumulator() -> u16 {
 }
 
 auto CPU6502::Relative() -> u16 {
-	mIsJump = true;
+	mCurrentInstructionIsJump = true;
 	mCurrentAddrUnmod = mC64->load8(PC + 1);
 	return PC + (i8)mCurrentAddrUnmod;
 }

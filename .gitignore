@@ -84,3 +84,10 @@ _deps
 build
 build/**
 docs
+bin
+test_in
+test_out
+build-*/
+.cpm/
+Radmap.md
+.aider*

@@ -44,7 +44,7 @@ auto Debugger::ShowC64CpuStats() -> void {
 
 	static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg;
 
-	auto f = [](const char *name, const char *hex, const char *dec, auto data) {
+	auto newRow = [](const char *name, const char *hex, const char *dec, auto data) {
 		ImGui::TableNextRow();
 		ImGui::TableNextColumn();
 		ImGui::Text("%s", name);
@@ -64,12 +64,12 @@ auto Debugger::ShowC64CpuStats() -> void {
 		ImGui::TableNextColumn();
 		ImGui::Text("%s", cpu->GetCurrentInstructionAddressString().c_str());
 
-		f("PC", "$%04X", "[%04d]", stats.PC);
-		f("A", "$%02X", "[%04d]", stats.A);
-		f("X", "$%02X", "[%04d]", stats.X);
-		f("Y", "$%02X", "[%04d]", stats.Y);
-		f("SP", "$%02X", "[%04d]", stats.SP);
-		f("PS", "$%02X", "[%04d]", stats.PS.data);
+		newRow("PC", "$%04X", "[%04d]", stats.PC);
+		newRow("A ", "$%02X", "[%04d]", stats.A);
+		newRow("X ", "$%02X", "[%04d]", stats.X);
+		newRow("Y ", "$%02X", "[%04d]", stats.Y);
+		newRow("SP", "$%02X", "[%04d]", stats.SP);
+		newRow("PS", "$%02X", "[%04d]", stats.PS.data);
 		ImGui::EndTable();
 	}
 
@@ -80,7 +80,7 @@ auto Debugger::ShowC64CpuStats() -> void {
 		ImGui::TableNextRow();
 		for (const auto &text : vt) {
 			ImGui::TableNextColumn();
-			ImGui::Text(text);
+			ImGui::Text("%s", text);
 		}
 		ImGui::TableNextRow();
 		for (const auto &data : vd) {

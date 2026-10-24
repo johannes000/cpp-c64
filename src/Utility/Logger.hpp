@@ -1,9 +1,15 @@
 #pragma once
 
-#include <spdlog/spdlog.h>
-#include <spdlog/sinks/stdout_color_sinks.h>
-#include <spdlog/sinks/basic_file_sink.h>
+#include <chrono>
+#include <ctime>
+#include <format>
+#include <iomanip>
 #include <memory>
+#include <sstream>
+#include <string>
+#include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/stdout_color_sinks.h>
+#include <spdlog/spdlog.h>
 
 typedef std::shared_ptr<spdlog::logger> LogPtr;
 

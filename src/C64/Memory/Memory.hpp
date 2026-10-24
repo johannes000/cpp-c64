@@ -1,6 +1,6 @@
 #pragma once
-#include "Utility\Includes.hpp"
 #include "C64\Component.hpp"
+#include "Utility\Includes.hpp"
 
 template <u32 size>
 class Memory : public Component {
@@ -37,7 +37,7 @@ public:
 		return false;
 	}
 
-	auto Reset() -> void {
+	auto Reset() -> void override {
 		memset(mData, 0, size_t(size));
 	}
 

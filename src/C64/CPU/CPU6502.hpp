@@ -1,7 +1,7 @@
 #pragma once
-#include "Utility\Includes.hpp"
 #include "C64\Component.hpp"
 #include "C64\Memory\Memory.hpp"
+#include "Utility\Includes.hpp"
 
 class C64;
 union ProcessorStatus {
@@ -40,13 +40,13 @@ public:
 
 public:
 	CPU6502(C64 *c64);
-	~CPU6502();
+	virtual ~CPU6502();
 
 	Instruction GetNextInstruction();
 	u16 mCurrentAddr;
 	u16 mCurrentAddrUnmod; // Für Debugger
 
-	bool mIsJump;
+	bool mCurrentInstructionIsJump;
 
 public:
 	auto RunOneInstruction() -> void;
@@ -68,7 +68,7 @@ public:
 	auto IOStore8(u16 address, u8 value) -> void override;
 	auto IOStore16(u16 address, u16 value) -> void override;
 
-	auto Reset() -> void;
+	auto Reset() -> void override;
 
 	auto GetCurrentAddress() const -> u16 {
 		return mCurrentAddr;

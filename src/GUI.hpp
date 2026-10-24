@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Utility\Includes.hpp"
+#include "Utility/Includes.hpp"
 
 // Dear ImGui: standalone example application for SDL3 + OpenGL
 // (SDL is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan/Metal graphics context creation, etc.)
@@ -50,12 +50,12 @@ public:
 	auto ShowMainMenuBar() -> void;
 	auto ShowDemoStuff() -> void;
 
-	auto GetContext() -> Context *{ return &mContext; } ;
+	auto GetContext() -> Context * { return &mContext; };
 
 private:
 	C64 *mC64;
 	Debugger *mDebug;
-	
+
 	Context mContext;
 
 	LogPtr log = AddLogger("GUI");

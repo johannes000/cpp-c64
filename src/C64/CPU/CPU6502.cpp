@@ -4,7 +4,7 @@
 
 CPU6502::CPU6502(C64 *c64) : Component("CPU"),
 							 mCurrentAddr(0), mCurrentAddrUnmod(0),
-							 mIsJump(false),
+							 mCurrentInstructionIsJump(false),
 							 mC64(c64),
 							 A(0), X(0), Y(0),
 							 PS(0), SP(0), PC(0) {
@@ -20,12 +20,12 @@ CPU6502::~CPU6502() {
 }
 
 auto CPU6502::RunOneInstruction() -> void {
-	mIsJump = false;
+	mCurrentInstructionIsJump = false;
 	mCurrentInstruction = GetNextInstruction();
 	mCurrentAddr = (this->*(mCurrentInstruction.AddrFunc))();
 	(this->*(mCurrentInstruction.InstFunc))();
 	LogCurrentInstruction();
-	if (!mIsJump)
+	if (!mCurrentInstructionIsJump)
 		PC += mCurrentInstruction.length;
 	UpdateCpuStateSnapshot();
 }
@@ -72,6 +72,7 @@ auto CPU6502::GetCurrentInstructionAddressString() const -> std::string {
 }
 
 auto CPU6502::GetAddressString(u16 /* addr */) const -> std::string {
+	return "";
 }
 
 auto CPU6502::GetImmStringAtAddress(u16 addr) const -> std::string {
@@ -196,6 +197,6 @@ auto CPU6502::HandleNZFlags(u16 val) -> void {
 auto CPU6502::Branch(bool f) -> void {
 	if (f) {
 		PC = mCurrentAddr;
-		mIsJump = true;
+		mCurrentInstructionIsJump = true;
 	}
 }
